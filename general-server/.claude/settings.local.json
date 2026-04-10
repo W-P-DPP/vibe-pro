@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker --version)",
+      "Bash(wsl --status)",
+      "Bash(mkdir -p tools)",
+      "Bash(curl -L -o redis.zip https://github.com/tporadowski/redis/releases/download/v5.0.14.1/Redis-5.0.14.1.zip)",
+      "Bash(powershell -Command \"New-Item -ItemType Directory -Force -Path tools | Out-Null; Invoke-WebRequest -Uri ''https://github.com/tporadowski/redis/releases/download/v5.0.14.1/Redis-5.0.14.1.zip'' -OutFile ''tools/redis.zip''\")",
+      "Bash(powershell -Command \"Invoke-WebRequest -Uri ''https://release.memurai.com/4.0.2/Memurai-Developer-4.0.2.msi'' -OutFile ''tools/memurai.msi''\")"
+    ]
+  }
+}

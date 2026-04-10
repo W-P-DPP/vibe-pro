@@ -1,0 +1,9 @@
+node_modules
+.turbo
+pnpm-debug.log*
+
+dist
+coverage
+logs
+
+frontend-template/frontend-template

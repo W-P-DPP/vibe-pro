@@ -1,0 +1,7 @@
+interface:
+  display_name: "Frontend Design Guard"
+  short_description: "Read design.md first and prefer the bundled shadcn theme"
+  default_prompt: "Use $frontend-design-guard to handle frontend work in this repository only after reading frontend-template/design.md first, then loading the bundled shadcn theme reference and preferring that theme unless the user explicitly overrides it."
+
+policy:
+  allow_implicit_invocation: true

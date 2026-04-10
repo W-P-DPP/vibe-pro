@@ -1,0 +1,7 @@
+interface:
+  display_name: "后端开发守卫"
+  short_description: "以强约束规范实现通用后端开发"
+  default_prompt: "处理后端开发、重构、接口设计、分层治理、数据库、缓存、配置、异常、日志或测试工作时使用 $backend-dev-guard。先读取代码库现状，再读取 skill 中的通用后端规范，按强约束分层和统一契约实现。"
+
+policy:
+  allow_implicit_invocation: true
