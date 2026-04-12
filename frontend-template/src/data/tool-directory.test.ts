@@ -2,9 +2,11 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   buildSearchableSiteMenuEntries,
   filterVisibleSiteMenuTree,
+  getHiddenSiteMenuEntries,
   getSiteMenuDescription,
   isHiddenMenuKeywordMatch,
   normalizeSiteMenuTree,
+  resolveSiteMenuSearchResults,
   resolveSiteMenuIcon,
   searchSiteMenuEntries,
 } from './tool-directory'
@@ -174,6 +176,21 @@ describe('tool-directory', () => {
     ])
   })
 
+  it('可提取全部隐藏菜单项', () => {
+    expect(getHiddenSiteMenuEntries(menuTreeFixture)).toEqual([
+      expect.objectContaining({
+        id: 12,
+        name: '调试面板',
+        hide: true,
+      }),
+      expect.objectContaining({
+        id: 2,
+        name: '隐藏应用',
+        hide: true,
+      }),
+    ])
+  })
+
   it('支持通过分组名、备注和路径进行前端模糊查询', () => {
     expect(searchSiteMenuEntries(menuTreeFixture, '工具')).toEqual([
       expect.objectContaining({ id: 11 }),
@@ -198,6 +215,27 @@ describe('tool-directory', () => {
     expect(isHiddenMenuKeywordMatch('secret')).toBe(true)
     expect(isHiddenMenuKeywordMatch(' SECRET ')).toBe(true)
     expect(isHiddenMenuKeywordMatch('secret-panel')).toBe(false)
+
+    vi.unstubAllEnvs()
+  })
+
+  it('只有在显式触发彩蛋展示时才返回隐藏菜单', () => {
+    vi.stubEnv('VITE_SITE_MENU_HIDDEN_KEYWORD', 'dpp')
+
+    expect(resolveSiteMenuSearchResults(menuTreeFixture, 'dpp')).toEqual([])
+
+    expect(resolveSiteMenuSearchResults(menuTreeFixture, 'dpp', { revealHiddenByKeyword: true })).toEqual([
+      expect.objectContaining({
+        id: 12,
+        name: '调试面板',
+        hide: true,
+      }),
+      expect.objectContaining({
+        id: 2,
+        name: '隐藏应用',
+        hide: true,
+      }),
+    ])
 
     vi.unstubAllEnvs()
   })

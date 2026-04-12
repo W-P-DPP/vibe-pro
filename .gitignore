@@ -1,4 +1,6 @@
 node_modules
+file
+rubbish
 .turbo
 pnpm-debug.log*
 
@@ -9,6 +11,6 @@ logs
 .codex
 
 
-file
 
-rubbish
+
+openspec

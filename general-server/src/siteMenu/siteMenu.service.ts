@@ -10,7 +10,7 @@ import type {
   UploadedSiteMenuFileDto,
 } from './siteMenu.dto.ts';
 import {
-  flattenSiteMenuSeedNodes,
+  normalizeImportedSiteMenuSource,
   type SiteMenuEntity,
 } from './siteMenu.entity.ts';
 import {
@@ -247,8 +247,7 @@ function parseSiteMenuFile(file: UploadedSiteMenuFileDto): SiteMenuImportSourceD
   }
 
   try {
-    const entities = flattenSiteMenuSeedNodes(parsedSource);
-    validateUniqueNodeIds(entities);
+    return normalizeImportedSiteMenuSource(parsedSource) as SiteMenuImportSourceDto;
   } catch (error) {
     if (error instanceof SiteMenuBusinessError) {
       throw error;
@@ -267,8 +266,6 @@ function parseSiteMenuFile(file: UploadedSiteMenuFileDto): SiteMenuImportSourceD
       HttpStatus.BAD_REQUEST,
     );
   }
-
-  return parsedSource as SiteMenuImportSourceDto;
 }
 
 function toResponseDto(entity: SiteMenuEntity): SiteMenuResponseDto {

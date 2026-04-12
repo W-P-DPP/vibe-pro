@@ -3,6 +3,7 @@ import { readFile, writeFile } from 'fs/promises';
 import type { Express } from 'express';
 import request from 'supertest';
 import { createApp } from '../../app.ts';
+import { normalizeImportedSiteMenuSource } from '../../src/siteMenu/siteMenu.entity.ts';
 import { initSiteMenuModule } from '../../src/siteMenu/siteMenu.repository.ts';
 import { saveSiteMenuSource, siteMenuFilePath } from '../../src/siteMenu.ts';
 import { UserRoleEnum } from '../../src/user/user.dto.ts';
@@ -619,6 +620,7 @@ describe('siteMenu 文件上传导入接口', () => {
         ],
       },
     ];
+    const normalizedImportedMenu = normalizeImportedSiteMenuSource(importedMenu);
 
     const res = await request(app)
       .post('/api/site-menu/uploadMenuFile')
@@ -633,13 +635,13 @@ describe('siteMenu 文件上传导入接口', () => {
       msg: '上传菜单文件成功',
       data: [
         expect.objectContaining({
-          id: 100,
+          id: 1,
           name: '导入根菜单',
           strict: true,
           hide: true,
           children: [
             expect.objectContaining({
-              id: 101,
+              id: 2,
               name: '导入子菜单',
               strict: false,
               hide: false,
@@ -653,13 +655,13 @@ describe('siteMenu 文件上传导入接口', () => {
     expect(listRes.status).toBe(200);
     expect(listRes.body.data).toEqual([
       expect.objectContaining({
-        id: 100,
+        id: 1,
         name: '导入根菜单',
         strict: true,
         hide: true,
         children: [
           expect.objectContaining({
-            id: 101,
+            id: 2,
             name: '导入子菜单',
             strict: false,
             hide: false,
@@ -669,16 +671,16 @@ describe('siteMenu 文件上传导入接口', () => {
     ]);
 
     const rows = await getSiteMenuRows();
-    expect(rows.map((row) => row.id)).toEqual([100, 101]);
+    expect(rows.map((row) => row.id)).toEqual([1, 2]);
     expect(rows).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: 100,
+          id: 1,
           strict: 1,
           hide: 1,
         }),
         expect.objectContaining({
-          id: 101,
+          id: 2,
           strict: 0,
           hide: 0,
         }),
@@ -686,7 +688,7 @@ describe('siteMenu 文件上传导入接口', () => {
     );
 
     const currentSiteMenuFileContent = await readFile(siteMenuFilePath, 'utf8');
-    expect(JSON.parse(currentSiteMenuFileContent)).toEqual(importedMenu);
+    expect(JSON.parse(currentSiteMenuFileContent)).toEqual(normalizedImportedMenu);
   });
 
   it('POST /api/site-menu/uploadMenuFile 未上传文件时应返回中文错误', async () => {

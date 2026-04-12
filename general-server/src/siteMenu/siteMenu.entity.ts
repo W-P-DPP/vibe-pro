@@ -151,6 +151,81 @@ function normalizeSeedBoolean(
   return value;
 }
 
+function assertImportNode(value: unknown): asserts value is Record<string, unknown> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new Error('菜单文件节点必须是对象');
+  }
+}
+
+function assertImportString(value: unknown, field: string, allowEmpty = false): string {
+  if (typeof value !== 'string') {
+    throw new Error(`菜单文件字段 ${field} 必须是字符串`);
+  }
+
+  if (!allowEmpty && !value.trim()) {
+    throw new Error(`菜单文件字段 ${field} 必须是非空字符串`);
+  }
+
+  return allowEmpty ? value : value.trim();
+}
+
+function normalizeImportBoolean(
+  value: unknown,
+  field: string,
+  defaultValue: boolean,
+): boolean {
+  if (value === undefined) {
+    return defaultValue;
+  }
+
+  if (typeof value !== 'boolean') {
+    throw new Error(`菜单文件字段 ${field} 必须是布尔值`);
+  }
+
+  return value;
+}
+
+function normalizeImportedSiteMenuNode(
+  value: unknown,
+  parentId: number | null,
+  nextIdRef: { value: number },
+): RawSiteMenuSeedNode {
+  assertImportNode(value);
+
+  const raw = value as RawSiteMenuSeedNode;
+  const id = nextIdRef.value;
+  nextIdRef.value += 1;
+
+  const children = raw.children === undefined
+    ? []
+    : Array.isArray(raw.children)
+      ? raw.children
+      : (() => {
+          throw new Error('菜单文件字段 children 必须是数组');
+        })();
+
+  if (raw.isTop !== undefined && typeof raw.isTop !== 'boolean') {
+    throw new Error('菜单文件字段 isTop 必须是布尔值');
+  }
+
+  return {
+    id,
+    name: assertImportString(raw.name, 'name'),
+    path: assertImportString(raw.path, 'path', true),
+    icon: assertImportString(raw.icon, 'icon', true),
+    isTop: parentId == null,
+    strict: normalizeImportBoolean(raw.strict, 'strict', false),
+    hide: normalizeImportBoolean(raw.hide, 'hide', false),
+    remark: typeof raw.remark === 'string' ? raw.remark.trim() : '',
+    children: children.map((child) => normalizeImportedSiteMenuNode(child, id, nextIdRef)),
+  };
+}
+
+export function normalizeImportedSiteMenuSource(source: unknown[]): RawSiteMenuSeedNode[] {
+  const nextIdRef = { value: 1 };
+  return source.map((node) => normalizeImportedSiteMenuNode(node, null, nextIdRef));
+}
+
 export function cloneSiteMenuNode(node: SiteMenuEntity): SiteMenuEntity {
   const cloned = Object.assign(new SiteMenuEntity(), node);
   cloned.children = node.children.map((child) => cloneSiteMenuNode(child));

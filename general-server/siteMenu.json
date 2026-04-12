@@ -3,93 +3,135 @@
     "id": 1,
     "name": "置顶",
     "path": "/1/port",
-    "isTop": true,
     "icon": "/public/icons/pin.svg",
+    "isTop": true,
+    "strict": false,
+    "hide": false,
+    "remark": "",
     "children": [
       {
-        "id": 11,
+        "id": 2,
         "name": "关于我",
         "path": "http://www.zwpsite.icu:8082/zwpsummary/",
         "icon": "/public/icons/pin.svg",
+        "isTop": false,
         "strict": false,
-        "hide": false
-      }
-    ]
-  },
-  {
-    "id": 2,
-    "name": "git",
-    "path": "/2/port",
-    "isTop": false,
-    "icon": "/public/icons/git.svg",
-    "children": [
-      {
-        "id": 21,
-        "name": "端口映射",
-        "path": "/my-resume",
-        "icon": "icon-path",
-        "strict": false,
-        "hide": false
+        "hide": false,
+        "remark": "",
+        "children": []
       }
     ]
   },
   {
     "id": 3,
-    "name": "工具",
-    "path": "/public/icons/tool.svg",
-    "isTop": false,
-    "icon": "/public/icons/tool.svg",
+    "name": "git",
+    "path": "/2/port",
+    "icon": "/public/icons/git.svg",
+    "isTop": true,
+    "strict": false,
+    "hide": false,
+    "remark": "",
     "children": [
       {
-        "id": 31,
-        "name": "JSON解析",
-        "path": "https://www.json.cn/",
-        "icon": "/public/icons/json.ico",
+        "id": 4,
+        "name": "端口映射",
+        "path": "/my-resume",
+        "icon": "icon-path",
+        "isTop": false,
         "strict": false,
-        "hide": false
-      },
-      {
-        "id": 32,
-        "name": "二维码生成",
-        "path": "https://cli.im/",
-        "icon": "/public/icons/qr.ico",
-        "strict": false,
-        "hide": false
+        "hide": false,
+        "remark": "",
+        "children": []
       }
     ]
   },
   {
-    "id": 4,
-    "name": "应用",
-    "path": "",
-    "isTop": false,
-    "icon": "/public/icons/app.svg",
+    "id": 5,
+    "name": "工具",
+    "path": "/public/icons/tool.svg",
+    "icon": "/public/icons/tool.svg",
+    "isTop": true,
+    "strict": false,
+    "hide": false,
+    "remark": "",
     "children": [
       {
-        "id": 41,
+        "id": 6,
+        "name": "JSON解析",
+        "path": "https://www.json.cn/",
+        "icon": "/public/icons/json.ico",
+        "isTop": false,
+        "strict": false,
+        "hide": false,
+        "remark": "",
+        "children": []
+      },
+      {
+        "id": 7,
+        "name": "二维码生成",
+        "path": "https://cli.im/",
+        "icon": "/public/icons/qr.ico",
+        "isTop": false,
+        "strict": false,
+        "hide": false,
+        "remark": "",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "应用",
+    "path": "",
+    "icon": "/public/icons/app.svg",
+    "isTop": true,
+    "strict": false,
+    "hide": false,
+    "remark": "",
+    "children": [
+      {
+        "id": 9,
         "name": "日志记录",
         "path": "https://www.zwpsite.icu/date-logger/",
         "icon": "/public/icons/log-color.svg",
+        "isTop": false,
         "strict": true,
-        "hide": false
+        "hide": false,
+        "remark": "",
+        "children": []
       },
       {
-        "id": 42,
+        "id": 10,
         "name": "openclaw",
         "path": "http://www.zwpsite.icu:8082/openclaw/",
         "icon": "/public/icons/openclaw.svg",
-        "remark": "小龙虾",
+        "isTop": false,
         "strict": false,
-        "hide": true
+        "hide": false,
+        "remark": "小龙虾",
+        "children": []
       },
       {
-        "id": 43,
+        "id": 11,
         "name": "file-server",
         "path": "http://www.zwpsite.icu:8082/file-server/",
         "icon": "/public/icons/file_server.svg",
-        "remark": "文件管理服务",
+        "isTop": false,
         "strict": true,
-        "hide": false
+        "hide": false,
+        "remark": "文件管理服务",
+        "children": []
+      },
+      {
+        "id": 12,
+        "name": "待办",
+        "path": "http://www.zwpsite.icu:8082/todo/",
+        "icon": "/public/icons/file_server.svg",
+        "isTop": false,
+        "strict": true,
+        "hide": true,
+        "remark": "待办",
+        "children": []
       }
     ]
   }

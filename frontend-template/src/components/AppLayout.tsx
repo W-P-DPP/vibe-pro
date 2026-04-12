@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useTheme } from 'next-themes'
 import {
@@ -44,11 +44,12 @@ import {
   buildToolStats,
   emptyToolStats,
   filterVisibleSiteMenuTree,
+  getHiddenSiteMenuEntries,
   isExternalLink,
   isHiddenMenuKeywordMatch,
   normalizeSiteMenuTree,
+  resolveSiteMenuSearchResults,
   resolveSiteMenuIcon,
-  searchSiteMenuEntries,
   type SearchableSiteMenuEntry,
   type ToolDirectoryContextValue,
   type ToolDirectoryLoadStatus,
@@ -96,6 +97,7 @@ export function AppLayout() {
   const [reloadSeed, setReloadSeed] = useState(0)
   const [searchPanelOpen, setSearchPanelOpen] = useState(false)
   const [searchKeyword, setSearchKeyword] = useState('')
+  const [hiddenMenuRevealActive, setHiddenMenuRevealActive] = useState(false)
 
   const deferredSearchKeyword = useDeferredValue(searchKeyword)
   const hiddenKeywordMatched = isHiddenMenuKeywordMatch(deferredSearchKeyword)
@@ -105,12 +107,17 @@ export function AppLayout() {
     [rawMenuTree],
   )
 
+  const hiddenMenuEntries = useMemo(
+    () => getHiddenSiteMenuEntries(rawMenuTree),
+    [rawMenuTree],
+  )
+
   const searchResults = useMemo(
     () =>
-      searchSiteMenuEntries(rawMenuTree, deferredSearchKeyword, {
-        includeHidden: hiddenKeywordMatched,
+      resolveSiteMenuSearchResults(rawMenuTree, deferredSearchKeyword, {
+        revealHiddenByKeyword: hiddenMenuRevealActive,
       }),
-    [deferredSearchKeyword, hiddenKeywordMatched, rawMenuTree],
+    [deferredSearchKeyword, hiddenMenuRevealActive, rawMenuTree],
   )
 
   useEffect(() => {
@@ -124,6 +131,18 @@ export function AppLayout() {
       searchInputRef.current?.focus()
     }
   }, [searchPanelOpen])
+
+  useEffect(() => {
+    if (!searchPanelOpen) {
+      setHiddenMenuRevealActive(false)
+    }
+  }, [searchPanelOpen])
+
+  useEffect(() => {
+    if (!isHiddenMenuKeywordMatch(searchKeyword)) {
+      setHiddenMenuRevealActive(false)
+    }
+  }, [searchKeyword])
 
   const themeLabel = useMemo(
     () => (themeMode === 'dark' ? '切到浅色' : '切到深色'),
@@ -192,8 +211,22 @@ export function AppLayout() {
   }
 
   const clearSearch = () => {
+    setHiddenMenuRevealActive(false)
     setSearchKeyword('')
     searchInputRef.current?.focus()
+  }
+
+  const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== 'Enter') {
+      return
+    }
+
+    if (!isHiddenMenuKeywordMatch(searchKeyword)) {
+      return
+    }
+
+    event.preventDefault()
+    setHiddenMenuRevealActive(true)
   }
 
   const outletContext: ToolDirectoryContextValue = {
@@ -338,6 +371,7 @@ export function AppLayout() {
                       ref={searchInputRef}
                       value={searchKeyword}
                       onChange={(event) => setSearchKeyword(event.target.value)}
+                      onKeyDown={handleSearchKeyDown}
                       placeholder="搜索菜单名称、描述或路径"
                       className="h-11 rounded-lg border-border bg-background pl-9 pr-10"
                     />
@@ -360,6 +394,12 @@ export function AppLayout() {
                     {deferredSearchKeyword.trim() && searchResults.length === 0 ? (
                       <div className="px-3 py-8 text-center text-sm text-muted-foreground">
                         没有匹配结果
+                      </div>
+                    ) : null}
+
+                    {hiddenMenuRevealActive && hiddenKeywordMatched && hiddenMenuEntries.length > 0 ? (
+                      <div className="px-3 pb-2 text-xs text-muted-foreground">
+                        宸叉樉绀洪殣钘忚彍鍗?
                       </div>
                     ) : null}
 

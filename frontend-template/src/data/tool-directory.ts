@@ -163,6 +163,26 @@ export function searchSiteMenuEntries(
   })
 }
 
+export function getHiddenSiteMenuEntries(nodes: SiteMenuResponseDto[]) {
+  return buildSearchableSiteMenuEntries(nodes).filter((entry) => entry.hide)
+}
+
+export function resolveSiteMenuSearchResults(
+  nodes: SiteMenuResponseDto[],
+  keyword: string,
+  options?: { revealHiddenByKeyword?: boolean },
+) {
+  if (!keyword.trim()) {
+    return []
+  }
+
+  if (options?.revealHiddenByKeyword && isHiddenMenuKeywordMatch(keyword)) {
+    return getHiddenSiteMenuEntries(nodes)
+  }
+
+  return searchSiteMenuEntries(nodes, keyword)
+}
+
 export const emptyToolStats: ToolStats = {
   sectionCount: 0,
   itemCount: 0,

@@ -449,13 +449,13 @@ describe('SiteMenuService', () => {
 
     expect(imported).toEqual([
       expect.objectContaining({
-        id: 100,
+        id: 1,
         name: '导入根菜单',
         strict: true,
         hide: true,
         children: [
           expect.objectContaining({
-            id: 101,
+            id: 2,
             name: '导入子菜单',
             strict: false,
             hide: false,
