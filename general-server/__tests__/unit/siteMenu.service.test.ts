@@ -58,6 +58,7 @@ function createRepositoryMock(records: SiteMenuEntity[]): SiteMenuRepositoryPort
         icon: input.icon,
         isTop: input.parentId == null,
         strict: input.strict,
+        hide: input.hide,
         sort: input.sort ?? 0,
         children: [],
       });
@@ -75,6 +76,9 @@ function createRepositoryMock(records: SiteMenuEntity[]): SiteMenuRepositoryPort
         strict: Object.prototype.hasOwnProperty.call(input, 'strict')
           ? input.strict
           : current.strict,
+        hide: Object.prototype.hasOwnProperty.call(input, 'hide')
+          ? input.hide
+          : current.hide,
         children: [],
       });
     },
@@ -89,7 +93,7 @@ function createRepositoryMock(records: SiteMenuEntity[]): SiteMenuRepositoryPort
 }
 
 describe('siteMenu 实体与导入辅助', () => {
-  it('应按 siteMenu.json 语义展开种子节点并保留 strict 默认值', () => {
+  it('应按 siteMenu.json 语义展开种子节点并保留 strict 与 hide 默认值', () => {
     const entities = flattenSiteMenuSeedNodes([
       {
         id: 1,
@@ -113,6 +117,7 @@ describe('siteMenu 实体与导入辅助', () => {
         isTop: false,
         icon: '/icons/second.svg',
         strict: true,
+        hide: true,
       },
     ]);
 
@@ -123,6 +128,7 @@ describe('siteMenu 实体与导入辅助', () => {
       sort: 0,
       isTop: true,
       strict: false,
+      hide: false,
     });
     expect(entities[1]).toMatchObject({
       id: 11,
@@ -130,16 +136,18 @@ describe('siteMenu 实体与导入辅助', () => {
       sort: 0,
       isTop: false,
       strict: false,
+      hide: false,
     });
     expect(entities[2]).toMatchObject({
       id: 2,
       parentId: null,
       sort: 1,
       strict: true,
+      hide: true,
     });
   });
 
-  it('应将数据库扁平记录组装为带 strict 的树结构', () => {
+  it('应将数据库扁平记录组装为带 strict 与 hide 的树结构', () => {
     const tree = buildSiteMenuEntityTree([
       Object.assign(new SiteMenuEntity(), {
         id: 11,
@@ -149,6 +157,7 @@ describe('siteMenu 实体与导入辅助', () => {
         icon: '/icons/child.svg',
         isTop: false,
         strict: true,
+        hide: true,
         sort: 0,
       }),
       Object.assign(new SiteMenuEntity(), {
@@ -159,6 +168,7 @@ describe('siteMenu 实体与导入辅助', () => {
         icon: '/icons/root.svg',
         isTop: true,
         strict: false,
+        hide: false,
         sort: 0,
       }),
     ]);
@@ -167,11 +177,13 @@ describe('siteMenu 实体与导入辅助', () => {
     expect(tree[0]).toMatchObject({
       id: 1,
       strict: false,
+      hide: false,
       children: [
         expect.objectContaining({
           id: 11,
           parentId: 1,
           strict: true,
+          hide: true,
         }),
       ],
     });
@@ -186,6 +198,7 @@ describe('SiteMenuService', () => {
       path: '/root',
       isTop: true,
       strict: false,
+      hide: false,
       icon: '/icons/root.svg',
       children: [
         {
@@ -194,6 +207,7 @@ describe('SiteMenuService', () => {
           path: '/child',
           icon: '/icons/child.svg',
           strict: true,
+          hide: true,
         },
       ],
     },
@@ -214,7 +228,7 @@ describe('SiteMenuService', () => {
     });
   });
 
-  it('创建菜单未传 strict 时应默认返回 false', async () => {
+  it('创建菜单未传 strict 与 hide 时应默认返回 false', async () => {
     const service = new SiteMenuService(createRepositoryMock(records));
 
     const created = await service.createSiteMenu({
@@ -228,25 +242,28 @@ describe('SiteMenuService', () => {
       expect.objectContaining({
         id: 99,
         strict: false,
+        hide: false,
       }),
     );
   });
 
-  it('创建菜单显式传入 strict 时应保留该布尔值', async () => {
+  it('创建菜单显式传入 strict 与 hide 时应保留该布尔值', async () => {
     const service = new SiteMenuService(createRepositoryMock(records));
 
     const created = await service.createSiteMenu({
       parentId: null,
-      name: '严格菜单',
-      path: '/strict-menu',
+      name: '隐藏严格菜单',
+      path: '/strict-hidden-menu',
       icon: '/icons/test.svg',
       strict: true,
+      hide: true,
     });
 
     expect(created).toEqual(
       expect.objectContaining({
         id: 99,
         strict: true,
+        hide: true,
       }),
     );
   });
@@ -263,19 +280,33 @@ describe('SiteMenuService', () => {
     });
   });
 
-  it('更新 strict 时应返回更新后的布尔值', async () => {
+  it('更新 strict 与 hide 时应返回更新后的布尔值', async () => {
     const service = new SiteMenuService(createRepositoryMock(records));
 
     const updated = await service.updateSiteMenu(1, {
       strict: true,
+      hide: true,
     });
 
     expect(updated).toEqual(
       expect.objectContaining({
         id: 1,
         strict: true,
+        hide: true,
       }),
     );
+  });
+
+  it('hide 不是布尔值时应返回中文参数错误', async () => {
+    const service = new SiteMenuService(createRepositoryMock(records));
+
+    await expect(
+      service.updateSiteMenu(1, {
+        hide: 'yes' as unknown as boolean,
+      }),
+    ).rejects.toMatchObject<Partial<SiteMenuBusinessError>>({
+      message: '菜单 hide 字段必须是布尔值',
+    });
   });
 
   it('strict 不是布尔值时应返回中文参数错误', async () => {
@@ -302,7 +333,7 @@ describe('SiteMenuService', () => {
     });
   });
 
-  it('查询菜单树时应返回包含 strict 的中文字段结构', async () => {
+  it('查询菜单树时应返回包含 strict 与 hide 的字段结构', async () => {
     const service = new SiteMenuService(createRepositoryMock(records));
 
     const menu = await service.getSiteMenu();
@@ -312,11 +343,13 @@ describe('SiteMenuService', () => {
         id: 1,
         name: '根菜单',
         strict: false,
+        hide: false,
         children: [
           expect.objectContaining({
             id: 11,
             name: '子菜单',
             strict: true,
+            hide: true,
           }),
         ],
       }),
@@ -343,6 +376,28 @@ describe('SiteMenuService', () => {
     });
   });
 
+  it('上传非法 hide 类型时应返回中文错误', async () => {
+    const service = new SiteMenuService(createRepositoryMock(records));
+
+    await expect(
+      service.importSiteMenuFile(
+        createUploadedFile(
+          JSON.stringify([
+            {
+              id: 100,
+              name: '错误菜单',
+              path: '/broken',
+              icon: '/icons/broken.svg',
+              hide: 'yes',
+            },
+          ]),
+        ),
+      ),
+    ).rejects.toMatchObject<Partial<SiteMenuBusinessError>>({
+      message: '菜单文件字段 hide 必须是布尔值',
+    });
+  });
+
   it('上传非法 strict 类型时应返回中文错误', async () => {
     const service = new SiteMenuService(createRepositoryMock(records));
 
@@ -365,7 +420,7 @@ describe('SiteMenuService', () => {
     });
   });
 
-  it('上传合法菜单文件时应返回带 strict 的新菜单树', async () => {
+  it('上传合法菜单文件时应返回带 strict 与 hide 的新菜单树', async () => {
     const service = new SiteMenuService(createRepositoryMock(records));
 
     const imported = await service.importSiteMenuFile(
@@ -378,6 +433,7 @@ describe('SiteMenuService', () => {
             icon: '/icons/import-root.svg',
             isTop: true,
             strict: true,
+            hide: true,
             children: [
               {
                 id: 101,
@@ -396,11 +452,13 @@ describe('SiteMenuService', () => {
         id: 100,
         name: '导入根菜单',
         strict: true,
+        hide: true,
         children: [
           expect.objectContaining({
             id: 101,
             name: '导入子菜单',
             strict: false,
+            hide: false,
           }),
         ],
       }),

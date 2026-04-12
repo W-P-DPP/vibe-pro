@@ -7,7 +7,7 @@ import { jwtMiddleware } from '../utils/middleware/jwtMiddleware.ts';
 const router: Router = express.Router();
 
 router.use('/file', jwtMiddleware, fileRouter);
-router.use('/site-menu',  siteMenuRouter);
+router.use('/site-menu', jwtMiddleware, siteMenuRouter);
 router.use('/user', userRouter);
 
 export default router;

@@ -1,14 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useTheme } from 'next-themes'
 import {
   CircleAlertIcon,
+  EyeOffIcon,
   LoaderCircleIcon,
   MoonStarIcon,
   PanelLeftIcon,
   RefreshCwIcon,
   SearchIcon,
   SunMediumIcon,
+  XIcon,
 } from 'lucide-react'
 import {
   Alert,
@@ -17,6 +19,10 @@ import {
   AlertTitle,
   Badge,
   Button,
+  Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -31,19 +37,25 @@ import {
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
+  toast,
 } from '@/components/ui'
 import { getSiteMenuConfig, getSiteMenuTree } from '@/api/modules/site-menu'
 import {
   buildToolStats,
   emptyToolStats,
+  filterVisibleSiteMenuTree,
+  isExternalLink,
+  isHiddenMenuKeywordMatch,
   normalizeSiteMenuTree,
   resolveSiteMenuIcon,
+  searchSiteMenuEntries,
+  type SearchableSiteMenuEntry,
   type ToolDirectoryContextValue,
   type ToolDirectoryLoadStatus,
 } from '@/data/tool-directory'
+import { buildStrictMenuLoginRedirectUrl } from '@/lib/strict-menu-redirect'
 
-const APP_SHELL_HEADER_CLASS =
-  'h-[var(--app-shell-header-height)] shrink-0'
+const APP_SHELL_HEADER_CLASS = 'h-[var(--app-shell-header-height)] shrink-0'
 
 function scrollToSection(sectionId: string) {
   document.getElementById(`section-${sectionId}`)?.scrollIntoView({
@@ -52,21 +64,66 @@ function scrollToSection(sectionId: string) {
   })
 }
 
+function openSearch(url: string) {
+  window.open(url, '_blank', 'noopener,noreferrer')
+}
+
+function openMenuEntry(entry: SearchableSiteMenuEntry) {
+  const normalizedPath = entry.path.trim()
+
+  if (entry.strict) {
+    openSearch(buildStrictMenuLoginRedirectUrl(normalizedPath))
+    return
+  }
+
+  if (isExternalLink(normalizedPath)) {
+    openSearch(normalizedPath)
+    return
+  }
+
+  toast.info(`入口 ${normalizedPath || entry.name} 暂未接入页面。`)
+}
+
 export function AppLayout() {
   const { resolvedTheme, setTheme } = useTheme()
+  const searchInputRef = useRef<HTMLInputElement | null>(null)
   const [appIcon, setAppIcon] = useState('/public/icons/tools.png')
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light')
   const [directoryStatus, setDirectoryStatus] = useState<ToolDirectoryLoadStatus>('loading')
   const [directoryErrorMessage, setDirectoryErrorMessage] = useState('')
-  const [menuTree, setMenuTree] = useState<ToolDirectoryContextValue['menuTree']>([])
+  const [rawMenuTree, setRawMenuTree] = useState<ToolDirectoryContextValue['menuTree']>([])
   const [toolStats, setToolStats] = useState(emptyToolStats)
   const [reloadSeed, setReloadSeed] = useState(0)
+  const [searchPanelOpen, setSearchPanelOpen] = useState(false)
+  const [searchKeyword, setSearchKeyword] = useState('')
+
+  const deferredSearchKeyword = useDeferredValue(searchKeyword)
+  const hiddenKeywordMatched = isHiddenMenuKeywordMatch(deferredSearchKeyword)
+
+  const visibleMenuTree = useMemo(
+    () => filterVisibleSiteMenuTree(rawMenuTree),
+    [rawMenuTree],
+  )
+
+  const searchResults = useMemo(
+    () =>
+      searchSiteMenuEntries(rawMenuTree, deferredSearchKeyword, {
+        includeHidden: hiddenKeywordMatched,
+      }),
+    [deferredSearchKeyword, hiddenKeywordMatched, rawMenuTree],
+  )
 
   useEffect(() => {
     if (resolvedTheme === 'dark' || resolvedTheme === 'light') {
       setThemeMode(resolvedTheme)
     }
   }, [resolvedTheme])
+
+  useEffect(() => {
+    if (searchPanelOpen) {
+      searchInputRef.current?.focus()
+    }
+  }, [searchPanelOpen])
 
   const themeLabel = useMemo(
     () => (themeMode === 'dark' ? '切到浅色' : '切到深色'),
@@ -103,16 +160,17 @@ export function AppLayout() {
         }
 
         const normalizedMenuTree = normalizeSiteMenuTree(menuTree)
+        const nextVisibleMenuTree = filterVisibleSiteMenuTree(normalizedMenuTree)
         setAppIcon(menuConfig.appIcon)
-        setMenuTree(normalizedMenuTree)
-        setToolStats(buildToolStats(normalizedMenuTree))
+        setRawMenuTree(normalizedMenuTree)
+        setToolStats(buildToolStats(nextVisibleMenuTree))
         setDirectoryStatus('success')
       } catch (error) {
         if (!active) {
           return
         }
 
-        setMenuTree([])
+        setRawMenuTree([])
         setAppIcon('/public/icons/tools.png')
         setToolStats(emptyToolStats)
         setDirectoryStatus('error')
@@ -133,9 +191,14 @@ export function AppLayout() {
     setReloadSeed((current) => current + 1)
   }
 
+  const clearSearch = () => {
+    setSearchKeyword('')
+    searchInputRef.current?.focus()
+  }
+
   const outletContext: ToolDirectoryContextValue = {
     status: directoryStatus,
-    menuTree,
+    menuTree: visibleMenuTree,
     stats: toolStats,
     errorMessage: directoryErrorMessage,
     reload: reloadDirectory,
@@ -201,7 +264,7 @@ export function AppLayout() {
 
               {directoryStatus === 'success' ? (
                 <SidebarMenu>
-                  {menuTree.map((section) => (
+                  {visibleMenuTree.map((section) => (
                     <SidebarMenuItem key={section.id}>
                       <SidebarMenuButton
                         tooltip={section.name}
@@ -217,7 +280,7 @@ export function AppLayout() {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
-                  {menuTree.length === 0 ? (
+                  {visibleMenuTree.length === 0 ? (
                     <div className="px-2 py-3 text-sm text-sidebar-foreground/70">
                       暂无可展示目录
                     </div>
@@ -253,7 +316,96 @@ export function AppLayout() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <SearchIcon className="hidden size-4 text-muted-foreground lg:block" />
+              <Popover open={searchPanelOpen} onOpenChange={setSearchPanelOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant={searchPanelOpen ? 'default' : 'outline'}
+                    size="sm"
+                    className="rounded-full px-2.5"
+                  >
+                    <SearchIcon data-icon="inline-start" />
+                    <span className="sr-only">打开菜单搜索</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="end"
+                  className="w-[min(30rem,calc(100vw-1.5rem))] rounded-lg border border-border bg-popover p-4 shadow-lg"
+                >
+                  <div className="relative">
+                    <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      ref={searchInputRef}
+                      value={searchKeyword}
+                      onChange={(event) => setSearchKeyword(event.target.value)}
+                      placeholder="搜索菜单名称、描述或路径"
+                      className="h-11 rounded-lg border-border bg-background pl-9 pr-10"
+                    />
+                    {searchKeyword.trim() ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-full"
+                        onClick={clearSearch}
+                      >
+                        <XIcon />
+                        <span className="sr-only">清空搜索词</span>
+                      </Button>
+                    ) : null}
+                  </div>
+
+                  {deferredSearchKeyword.trim() ? (
+                    <div className="mt-3 max-h-[24rem] overflow-y-auto">
+                    {deferredSearchKeyword.trim() && searchResults.length === 0 ? (
+                      <div className="px-3 py-8 text-center text-sm text-muted-foreground">
+                        没有匹配结果
+                      </div>
+                    ) : null}
+
+                    {searchResults.map((entry) => (
+                      <button
+                        key={entry.id}
+                        type="button"
+                        onClick={() => openMenuEntry(entry)}
+                        className="flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
+                      >
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted/50">
+                          <img
+                            src={resolveSiteMenuIcon(entry.icon)}
+                            alt=""
+                            className="size-4 object-contain"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate text-sm font-medium text-foreground">
+                              {entry.name}
+                            </span>
+                            {entry.hide ? (
+                              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                <EyeOffIcon className="size-3" />
+                                隐藏
+                              </span>
+                            ) : null}
+                          </div>
+                          <div className="mt-1 truncate text-xs text-muted-foreground">
+                            {entry.sectionName}
+                          </div>
+                          <div className="mt-1 truncate text-xs text-muted-foreground">
+                            {entry.path.trim() || '未配置路径'}
+                          </div>
+                          <div className="mt-1 text-sm text-muted-foreground">
+                            {entry.remark || '暂无菜单说明'}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                    </div>
+                  ) : null}
+                </PopoverContent>
+              </Popover>
+
               <Button
                 type="button"
                 variant="outline"

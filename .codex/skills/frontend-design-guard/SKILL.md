@@ -15,9 +15,10 @@ Use this skill for frontend work in this repository, especially `frontend-templa
 2. Read `frontend-template/design.md` before further analysis, planning, code generation, styling, or component edits.
 3. Read `references/shadcn-theme.css` immediately after `design.md` and treat it as the preferred theme source.
 4. Unless the user explicitly requests another language, generate user-facing frontend content in Simplified Chinese, including page copy, labels, placeholders, helper text, status text, empty states, and validation messages.
-5. Summarize the design constraints and theme constraints that matter for the current task before implementation.
-6. Implement the task while keeping the output aligned with `design.md` and the bundled theme.
-7. Re-check the result against `design.md` and the bundled theme before finishing.
+5. Default to a restrained, minimal UI direction unless the user explicitly asks for a stronger visual treatment. Prefer fewer layers, fewer decorative badges, and clearer information hierarchy over visual flourish.
+6. Summarize the design constraints and theme constraints that matter for the current task before implementation.
+7. Implement the task while keeping the output aligned with `design.md` and the bundled theme.
+8. Re-check the result against `design.md` and the bundled theme before finishing.
 
 ## Hard Rules
 
@@ -27,6 +28,7 @@ Use this skill for frontend work in this repository, especially `frontend-templa
 - Do not introduce a separate visual language that conflicts with `design.md`.
 - Do not ignore the bundled theme unless the user explicitly asks for a different theme direction.
 - Do not turn existing `shadcn` components into a different UI style.
+- Do not over-design simple interactions. For straightforward utility UI such as search, filters, popovers, and small forms, prefer minimal structure and avoid decorative layers unless the user explicitly asks for them.
 - Do not validate only one theme for UI changes. Check both light and dark themes.
 - Do not default to English for generated frontend copy unless the user explicitly asks for English or another language.
 
@@ -58,6 +60,7 @@ Before writing code, summarize the constraints relevant to the task, such as:
 - light and dark theme consistency
 - reuse of the existing `shadcn` system
 - use of the existing token, spacing, radius, and interaction systems
+- whether the task should be visually restrained and simplified to the minimum useful hierarchy
 - default Simplified Chinese copy unless the user explicitly overrides the language
 
 If the task conflicts with `design.md`, state the conflict and ask the user to confirm direction before continuing. If the bundled theme conflicts with an explicit user instruction, follow the user instruction.
@@ -71,6 +74,7 @@ During implementation:
 - prefer the bundled shadcn theme file as the baseline theme source
 - keep token usage consistent
 - avoid creating a parallel design system
+- when the user asks for simplicity, actively remove non-essential badges, helper blocks, nested containers, and ornamental emphasis instead of only restyling them
 - preserve the interaction and state patterns defined by the project
 - default generated user-facing content to Simplified Chinese unless the user explicitly requests another language
 
@@ -83,6 +87,7 @@ Before finishing, check at least:
 - whether light and dark themes still express the same visual language
 - whether the work still fits the existing component system
 - whether there are stray color, radius, shadow, or spacing values that bypass project tokens
+- whether simple utility UI has been kept intentionally minimal instead of being over-structured
 - whether generated user-facing content stayed in Simplified Chinese unless the user explicitly requested another language
 
 ## Missing or conflicting design rules

@@ -17,6 +17,7 @@ type SiteMenuRow = {
   icon: string
   is_top: number
   strict: number | boolean
+  hide: number | boolean
   sort: number
   create_by: string | null
   create_time: Date | string | null
@@ -50,6 +51,7 @@ const SITE_MENU_TABLE_COLUMNS = [
   'icon',
   'is_top',
   'strict',
+  'hide',
   'sort',
   'create_by',
   'create_time',
@@ -166,7 +168,7 @@ async function insertSiteMenuRows(rows: SiteMenuRow[]): Promise<void> {
       `
         REPLACE INTO ${SITE_MENU_TABLE_NAME}
           (${SITE_MENU_TABLE_COLUMNS})
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         row.id,
@@ -176,6 +178,7 @@ async function insertSiteMenuRows(rows: SiteMenuRow[]): Promise<void> {
         row.icon,
         row.is_top,
         row.strict,
+        row.hide,
         row.sort,
         row.create_by,
         row.create_time,
@@ -318,6 +321,7 @@ describe('siteMenu 查询接口', () => {
         icon: expect.any(String),
         isTop: expect.any(Boolean),
         strict: expect.any(Boolean),
+        hide: expect.any(Boolean),
         sort: expect.any(Number),
         remark: '',
         children: expect.any(Array),
@@ -340,6 +344,7 @@ describe('siteMenu 查询接口', () => {
         id: 3,
         name: '工具',
         strict: false,
+        hide: false,
       }),
     );
   });
@@ -357,7 +362,26 @@ describe('siteMenu 查询接口', () => {
         id: 3,
         name: '工具',
         strict: false,
+        hide: false,
         remark: '',
+      }),
+    );
+  });
+
+  it('GET /api/site-menu/getMenu 应保留 hide=true 的隐藏节点供前端消费', async () => {
+    const res = await request(app).get('/api/site-menu/getMenu');
+
+    expect(res.status).toBe(200);
+
+    const appSection = res.body.data.find((item: { id: number }) => item.id === 4);
+    const hiddenMenu = appSection.children.find((item: { id: number }) => item.id === 42);
+
+    expect(hiddenMenu).toEqual(
+      expect.objectContaining({
+        id: 42,
+        name: 'openclaw',
+        hide: true,
+        strict: false,
       }),
     );
   });
@@ -372,6 +396,7 @@ describe('siteMenu 查询接口', () => {
       expect.objectContaining({
         id: 31,
         strict: false,
+        hide: false,
         remark: '用于在线解析 JSON 文本',
       }),
     );
@@ -384,6 +409,7 @@ describe('siteMenu 查询接口', () => {
       expect.objectContaining({
         id: 31,
         strict: false,
+        hide: false,
         remark: '用于在线解析 JSON 文本',
       }),
     );
@@ -394,6 +420,7 @@ describe('siteMenu 查询接口', () => {
       expect.objectContaining({
         id: 31,
         strict: false,
+        hide: false,
         remark: '用于在线解析 JSON 文本',
       }),
     );
@@ -408,6 +435,7 @@ describe('siteMenu CRUD 接口', () => {
       path: '/test-menu',
       icon: '/icons/test.svg',
       strict: true,
+      hide: true,
     });
 
     expect(res.status).toBe(200);
@@ -421,11 +449,23 @@ describe('siteMenu CRUD 接口', () => {
         parentId: null,
         name: '测试菜单',
         strict: true,
+        hide: true,
       }),
+    );
+
+    const rows = await getSiteMenuRows();
+    expect(rows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: '测试菜单',
+          strict: 1,
+          hide: 1,
+        }),
+      ]),
     );
   });
 
-  it('POST /api/site-menu/createMenu 未传 strict 时应默认返回 false', async () => {
+  it('POST /api/site-menu/createMenu 未传 strict 与 hide 时应默认返回 false', async () => {
     const res = await request(app).post('/api/site-menu/createMenu').send({
       parentId: null,
       name: '默认严格菜单',
@@ -438,6 +478,7 @@ describe('siteMenu CRUD 接口', () => {
       expect.objectContaining({
         name: '默认严格菜单',
         strict: false,
+        hide: false,
       }),
     );
   });
@@ -455,6 +496,22 @@ describe('siteMenu CRUD 接口', () => {
     expect(res.body).toMatchObject({
       code: 400,
       msg: '菜单 strict 字段必须是布尔值',
+    });
+  });
+
+  it('POST /api/site-menu/createMenu hide 类型错误时应返回中文错误', async () => {
+    const res = await request(app).post('/api/site-menu/createMenu').send({
+      parentId: null,
+      name: '非法 hide 菜单',
+      path: '/invalid-hide',
+      icon: '/icons/default.svg',
+      hide: 'yes',
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({
+      code: 400,
+      msg: '菜单 hide 字段必须是布尔值',
     });
   });
 
@@ -478,6 +535,7 @@ describe('siteMenu CRUD 接口', () => {
       name: 'Git工具',
       path: '/git-tools',
       strict: true,
+      hide: true,
     });
 
     expect(res.status).toBe(200);
@@ -491,8 +549,32 @@ describe('siteMenu CRUD 接口', () => {
         name: 'Git工具',
         path: '/git-tools',
         strict: true,
+        hide: true,
       }),
     );
+
+    const rows = await getSiteMenuRows();
+    expect(rows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 2,
+          strict: 1,
+          hide: 1,
+        }),
+      ]),
+    );
+  });
+
+  it('PUT /api/site-menu/updateMenu/:id hide 类型错误时应返回中文错误', async () => {
+    const res = await request(app).put('/api/site-menu/updateMenu/2').send({
+      hide: 'yes',
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({
+      code: 400,
+      msg: '菜单 hide 字段必须是布尔值',
+    });
   });
 
   it('DELETE /api/site-menu/deleteMenu/:id 应删除菜单及其子树', async () => {
@@ -526,6 +608,7 @@ describe('siteMenu 文件上传导入接口', () => {
         icon: '/icons/import-root.svg',
         isTop: true,
         strict: true,
+        hide: true,
         children: [
           {
             id: 101,
@@ -553,11 +636,13 @@ describe('siteMenu 文件上传导入接口', () => {
           id: 100,
           name: '导入根菜单',
           strict: true,
+          hide: true,
           children: [
             expect.objectContaining({
               id: 101,
               name: '导入子菜单',
               strict: false,
+              hide: false,
             }),
           ],
         }),
@@ -571,11 +656,13 @@ describe('siteMenu 文件上传导入接口', () => {
         id: 100,
         name: '导入根菜单',
         strict: true,
+        hide: true,
         children: [
           expect.objectContaining({
             id: 101,
             name: '导入子菜单',
             strict: false,
+            hide: false,
           }),
         ],
       }),
@@ -588,10 +675,12 @@ describe('siteMenu 文件上传导入接口', () => {
         expect.objectContaining({
           id: 100,
           strict: 1,
+          hide: 1,
         }),
         expect.objectContaining({
           id: 101,
           strict: 0,
+          hide: 0,
         }),
       ]),
     );
@@ -622,6 +711,36 @@ describe('siteMenu 文件上传导入接口', () => {
     expect(res.body).toMatchObject({
       code: 400,
       msg: '菜单文件不是有效的 JSON 格式',
+    });
+  });
+
+  it('POST /api/site-menu/uploadMenuFile 上传非法 hide 类型时应返回中文错误', async () => {
+    const res = await request(app)
+      .post('/api/site-menu/uploadMenuFile')
+      .attach(
+        'file',
+        Buffer.from(
+          JSON.stringify([
+            {
+              id: 100,
+              name: '错误菜单',
+              path: '/broken',
+              icon: '/icons/broken.svg',
+              hide: 'yes',
+            },
+          ]),
+          'utf8',
+        ),
+        {
+          filename: 'siteMenu.json',
+          contentType: 'application/json',
+        },
+      );
+
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({
+      code: 400,
+      msg: '菜单文件字段 hide 必须是布尔值',
     });
   });
 

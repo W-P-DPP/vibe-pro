@@ -8,6 +8,7 @@ export interface RawSiteMenuSeedNode {
   isTop?: unknown
   icon?: unknown
   strict?: unknown
+  hide?: unknown
   remark?: unknown
   children?: unknown
 }
@@ -20,6 +21,7 @@ export class SiteMenuEntity extends BaseEntity {
   icon!: string
   isTop!: boolean
   strict!: boolean
+  hide!: boolean
   sort!: number
   children: SiteMenuEntity[] = []
 }
@@ -78,6 +80,13 @@ export const SiteMenuEntitySchema = new EntitySchema<SiteMenuEntity>({
       nullable: false,
       default: false,
       comment: '是否启用严格模式',
+    },
+    hide: {
+      name: 'hide',
+      type: Boolean,
+      nullable: false,
+      default: false,
+      comment: '鏄惁榛樿闅愯棌鑿滃崟',
     },
     sort: {
       name: 'sort',
@@ -230,6 +239,7 @@ export function flattenSiteMenuSeedNodes(
       icon: assertString(raw.icon, 'icon', true),
       isTop: normalizeSeedBoolean(raw.isTop, 'isTop', parentId == null),
       strict: normalizeSeedBoolean(raw.strict, 'strict', false),
+      hide: normalizeSeedBoolean(raw.hide, 'hide', false),
       sort: index,
       createBy: 'system',
       updateBy: 'system',

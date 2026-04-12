@@ -1,6 +1,7 @@
 import type { SiteMenuResponseDto } from '@/api/modules/site-menu'
 
 const DEFAULT_SITE_MENU_ICON = '/icons/tool.svg'
+const DEFAULT_HIDDEN_MENU_KEYWORD = 'dpp'
 
 export type ToolStats = {
   sectionCount: number
@@ -15,6 +16,18 @@ export type ToolDirectoryContextValue = {
   stats: ToolStats
   errorMessage: string
   reload: () => void
+}
+
+export type SearchableSiteMenuEntry = {
+  id: number
+  sectionId: number
+  sectionName: string
+  name: string
+  path: string
+  icon: string
+  strict: boolean
+  hide: boolean
+  remark: string
 }
 
 export function isExternalLink(path: string) {
@@ -39,6 +52,18 @@ function sortSiteMenuNodes(nodes: SiteMenuResponseDto[]) {
   return [...nodes].sort((left, right) => left.sort - right.sort || left.id - right.id)
 }
 
+function normalizeSearchText(value: string | undefined) {
+  return (value ?? '').trim().toLowerCase().replace(/\s+/g, '')
+}
+
+function shouldKeepVisibleNode(node: SiteMenuResponseDto) {
+  if (node.hide) {
+    return false
+  }
+
+  return node.children.length > 0 || Boolean(node.path.trim())
+}
+
 export function normalizeSiteMenuRemark(remark: string | undefined) {
   return remark?.trim() ?? ''
 }
@@ -47,9 +72,19 @@ export function normalizeSiteMenuTree(nodes: SiteMenuResponseDto[]): SiteMenuRes
   return sortSiteMenuNodes(nodes).map((node) => ({
     ...node,
     strict: Boolean(node.strict),
+    hide: Boolean(node.hide),
     remark: normalizeSiteMenuRemark(node.remark),
     children: normalizeSiteMenuTree(node.children),
   }))
+}
+
+export function filterVisibleSiteMenuTree(nodes: SiteMenuResponseDto[]): SiteMenuResponseDto[] {
+  return normalizeSiteMenuTree(nodes)
+    .map((node) => ({
+      ...node,
+      children: filterVisibleSiteMenuTree(node.children),
+    }))
+    .filter(shouldKeepVisibleNode)
 }
 
 export function getSiteMenuDescription(remark: string | undefined) {
@@ -67,6 +102,65 @@ export function buildToolStats(nodes: SiteMenuResponseDto[]): ToolStats {
       0,
     ),
   }
+}
+
+export function buildSearchableSiteMenuEntries(
+  nodes: SiteMenuResponseDto[],
+): SearchableSiteMenuEntry[] {
+  return normalizeSiteMenuTree(nodes).flatMap((section) => {
+    const leafEntries =
+      section.children.length > 0
+        ? section.children
+        : section.path.trim()
+          ? [{ ...section, children: [] }]
+          : []
+
+    return leafEntries.map((entry) => ({
+      id: entry.id,
+      sectionId: section.id,
+      sectionName: section.name,
+      name: entry.name,
+      path: entry.path,
+      icon: entry.icon,
+      strict: entry.strict,
+      hide: entry.hide,
+      remark: normalizeSiteMenuRemark(entry.remark),
+    }))
+  })
+}
+
+export function getHiddenMenuKeyword() {
+  const configured = import.meta.env.VITE_SITE_MENU_HIDDEN_KEYWORD?.trim()
+  return configured || DEFAULT_HIDDEN_MENU_KEYWORD
+}
+
+export function isHiddenMenuKeywordMatch(keyword: string) {
+  return normalizeSearchText(keyword) === normalizeSearchText(getHiddenMenuKeyword())
+}
+
+export function searchSiteMenuEntries(
+  nodes: SiteMenuResponseDto[],
+  keyword: string,
+  options?: { includeHidden?: boolean },
+) {
+  const normalizedKeyword = normalizeSearchText(keyword)
+  if (!normalizedKeyword) {
+    return []
+  }
+
+  const includeHidden = options?.includeHidden ?? false
+
+  return buildSearchableSiteMenuEntries(nodes).filter((entry) => {
+    if (entry.hide && !includeHidden) {
+      return false
+    }
+
+    const haystack = normalizeSearchText(
+      [entry.sectionName, entry.name, entry.remark, entry.path].join(' '),
+    )
+
+    return haystack.includes(normalizedKeyword)
+  })
 }
 
 export const emptyToolStats: ToolStats = {

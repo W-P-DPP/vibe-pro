@@ -280,6 +280,7 @@ function toResponseDto(entity: SiteMenuEntity): SiteMenuResponseDto {
     icon: entity.icon,
     isTop: entity.isTop,
     strict: entity.strict,
+    hide: entity.hide,
     sort: entity.sort,
     children: entity.children.map(toResponseDto),
     createBy: entity.createBy,
@@ -298,6 +299,7 @@ function validateCreateInput(input: Record<string, unknown>): CreateSiteMenuRequ
     icon: ensureString(input.icon, '图标', true),
     isTop: input.parentId == null,
     strict: normalizeRequiredBoolean(input.strict, 'strict', '菜单 strict 字段', false),
+    hide: normalizeRequiredBoolean(input.hide, 'hide', '菜单 hide 字段', false),
     sort:
       input.sort === undefined
         ? undefined
@@ -336,6 +338,9 @@ function validateUpdateInput(input: Record<string, unknown>): UpdateSiteMenuRequ
   }
   if (Object.prototype.hasOwnProperty.call(input, 'strict')) {
     nextInput.strict = normalizeRequiredBoolean(input.strict, 'strict', '菜单 strict 字段', false);
+  }
+  if (Object.prototype.hasOwnProperty.call(input, 'hide')) {
+    nextInput.hide = normalizeRequiredBoolean(input.hide, 'hide', '菜单 hide 字段', false);
   }
   if (Object.prototype.hasOwnProperty.call(input, 'sort') && input.sort !== undefined) {
     if (typeof input.sort !== 'number' || !Number.isInteger(input.sort) || input.sort < 0) {
@@ -444,6 +449,7 @@ export class SiteMenuService {
       ...payload,
       isTop: payload.parentId == null,
       strict: payload.strict ?? false,
+      hide: payload.hide ?? false,
     });
 
     if (!created) {

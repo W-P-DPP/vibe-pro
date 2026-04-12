@@ -11,7 +11,8 @@
         "name": "关于我",
         "path": "http://www.zwpsite.icu:8082/zwpsummary/",
         "icon": "/public/icons/pin.svg",
-        "strict": false
+        "strict": false,
+        "hide": false
       }
     ]
   },
@@ -27,7 +28,8 @@
         "name": "端口映射",
         "path": "/my-resume",
         "icon": "icon-path",
-        "strict": false
+        "strict": false,
+        "hide": false
       }
     ]
   },
@@ -43,14 +45,16 @@
         "name": "JSON解析",
         "path": "https://www.json.cn/",
         "icon": "/public/icons/json.ico",
-        "strict": false
+        "strict": false,
+        "hide": false
       },
       {
         "id": 32,
         "name": "二维码生成",
         "path": "https://cli.im/",
         "icon": "/public/icons/qr.ico",
-        "strict": false
+        "strict": false,
+        "hide": false
       }
     ]
   },
@@ -66,7 +70,8 @@
         "name": "日志记录",
         "path": "https://www.zwpsite.icu/date-logger/",
         "icon": "/public/icons/log-color.svg",
-        "strict": true
+        "strict": true,
+        "hide": false
       },
       {
         "id": 42,
@@ -74,7 +79,8 @@
         "path": "http://www.zwpsite.icu:8082/openclaw/",
         "icon": "/public/icons/openclaw.svg",
         "remark": "小龙虾",
-        "strict": false
+        "strict": false,
+        "hide": true
       },
       {
         "id": 43,
@@ -82,7 +88,8 @@
         "path": "http://www.zwpsite.icu:8082/file-server/",
         "icon": "/public/icons/file_server.svg",
         "remark": "文件管理服务",
-        "strict": true
+        "strict": true,
+        "hide": false
       }
     ]
   }
