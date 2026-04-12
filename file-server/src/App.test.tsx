@@ -1,6 +1,20 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
+const { redirectToLoginPageMock } = vi.hoisted(() => ({
+  redirectToLoginPageMock: vi.fn(),
+}))
+
+vi.mock('./lib/auth-session', async () => {
+  const actual = await vi.importActual<typeof import('./lib/auth-session')>('./lib/auth-session')
+
+  return {
+    ...actual,
+    redirectToLoginPage: redirectToLoginPageMock,
+  }
+})
+
 import App from './App'
 import { ThemeProvider } from './components/theme-provider'
 
@@ -41,6 +55,7 @@ function textResponse(text: string, contentType = 'text/plain; charset=utf-8') {
 describe('App', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
+    redirectToLoginPageMock.mockReset()
     localStorage.clear()
     document.cookie = 'file_preview_token=; Max-Age=0; Path=/'
   })
@@ -234,6 +249,7 @@ describe('App', () => {
         },
       ]),
     )
+    fetchMock.mockResolvedValueOnce(textResponse('', 'audio/mpeg'))
     vi.stubGlobal('fetch', fetchMock)
 
     const view = renderApp()
@@ -252,7 +268,7 @@ describe('App', () => {
     expect(view.container.querySelector('audio')?.getAttribute('src')).toBe(
       '/api/file/preview?targetPath=%2Fdocs%2Fsong.mp3',
     )
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
     expect(document.cookie).toContain('file_preview_token=preview-token')
   })
 
@@ -284,6 +300,7 @@ describe('App', () => {
         },
       ]),
     )
+    fetchMock.mockResolvedValueOnce(textResponse('', 'audio/mpeg'))
     vi.stubGlobal('fetch', fetchMock)
 
     const view = renderApp()
@@ -303,5 +320,104 @@ describe('App', () => {
       '/api/file/preview?targetPath=%2Fdocs%2Fsong.mp3',
     )
     expect(document.cookie).toContain('file_preview_token=session-token')
+  })
+
+  it('should redirect to login when initial tree loading returns 401', async () => {
+    const fetchMock = vi.fn()
+    fetchMock.mockResolvedValueOnce(jsonResponse(null, '未登录', 401))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderApp()
+
+    await waitFor(() => {
+      expect(redirectToLoginPageMock).toHaveBeenCalledTimes(1)
+    })
+    expect(await screen.findByText('登录状态已失效，请重新登录')).toBeInTheDocument()
+  })
+
+  it('should redirect to login when audio preview preflight returns 403', async () => {
+    const fetchMock = vi.fn()
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse([
+        {
+          name: 'docs',
+          relativePath: '/docs',
+          type: 'folder',
+          children: [
+            {
+              name: 'song.mp3',
+              relativePath: '/docs/song.mp3',
+              type: 'file',
+              size: 1024,
+              children: [],
+            },
+          ],
+        },
+      ]),
+    )
+    fetchMock.mockResolvedValueOnce(jsonResponse(null, '未登录', 403))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const view = renderApp()
+
+    const docsNode = (await screen.findByRole('button', { name: /docs/ })).closest('[draggable="true"]')
+    if (!(docsNode instanceof HTMLElement)) {
+      throw new Error('docs 节点未正确渲染')
+    }
+
+    await userEvent.click(within(docsNode).getByRole('button', { name: '展开目录' }))
+    await userEvent.click(await screen.findByRole('button', { name: /song\.mp3/ }))
+
+    await waitFor(() => {
+      expect(redirectToLoginPageMock).toHaveBeenCalledTimes(1)
+    })
+    expect(view.container.querySelector('audio')).toBeNull()
+  })
+
+  it('should redirect to login when deleting a file returns 401', async () => {
+    const fetchMock = vi.fn()
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse([
+        {
+          name: 'docs',
+          relativePath: '/docs',
+          type: 'folder',
+          children: [
+            {
+              name: 'report.md',
+              relativePath: '/docs/report.md',
+              type: 'file',
+              size: 8,
+              children: [],
+            },
+          ],
+        },
+      ]),
+    )
+    fetchMock.mockResolvedValueOnce(jsonResponse(null, '未登录', 401))
+    vi.stubGlobal('fetch', fetchMock)
+    vi.stubGlobal('confirm', vi.fn(() => true))
+
+    renderApp()
+
+    const docsNode = (await screen.findByRole('button', { name: /docs/ })).closest('[draggable="true"]')
+    if (!(docsNode instanceof HTMLElement)) {
+      throw new Error('docs 节点未正确渲染')
+    }
+
+    await userEvent.click(within(docsNode).getByRole('button', { name: '展开目录' }))
+    const fileButton = await screen.findByRole('button', { name: /report\.md/ })
+    const fileNode = fileButton.closest('[draggable="true"]')
+    if (!(fileNode instanceof HTMLElement)) {
+      throw new Error('report.md 节点未正确渲染')
+    }
+
+    await userEvent.click(fileButton)
+    await userEvent.click(within(fileNode).getByRole('button', { name: /rubbish/ }))
+
+    await waitFor(() => {
+      expect(redirectToLoginPageMock).toHaveBeenCalledTimes(1)
+    })
+    expect(await screen.findByText('登录状态已失效，请重新登录')).toBeInTheDocument()
   })
 })

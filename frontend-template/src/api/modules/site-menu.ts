@@ -37,7 +37,9 @@ let cachedSiteMenuConfig: SiteMenuConfigResponseDto | null = null
 let siteMenuConfigRequest: Promise<SiteMenuConfigResponseDto> | null = null
 
 async function fetchSiteMenuTree() {
-  const response = await request.get<ApiResponse<SiteMenuResponseDto[]>>('/site-menu/getMenu')
+  const response = await request.get<ApiResponse<SiteMenuResponseDto[]>>('/site-menu/getMenu', {
+    requiresAuth: true,
+  })
 
   if (response.code !== 200) {
     throw new RequestError(response.msg || '获取目录失败，请稍后重试。', {
@@ -50,7 +52,12 @@ async function fetchSiteMenuTree() {
 }
 
 async function fetchSiteMenuConfig() {
-  const response = await request.get<ApiResponse<SiteMenuConfigResponseDto>>('/site-menu/getMenuConfig')
+  const response = await request.get<ApiResponse<SiteMenuConfigResponseDto>>(
+    '/site-menu/getMenuConfig',
+    {
+      requiresAuth: true,
+    },
+  )
 
   if (response.code !== 200) {
     throw new RequestError(response.msg || '获取菜单配置失败，请稍后重试。', {

@@ -76,6 +76,7 @@ During implementation:
 - avoid creating a parallel design system
 - when the user asks for simplicity, actively remove non-essential badges, helper blocks, nested containers, and ornamental emphasis instead of only restyling them
 - preserve the interaction and state patterns defined by the project
+- when a frontend request is protected by authentication, make the request path explicit and redirect to the login page with a `redirect` target when auth returns `401` or `403`
 - default generated user-facing content to Simplified Chinese unless the user explicitly requests another language
 
 ### Step 4: Validate
@@ -89,6 +90,7 @@ Before finishing, check at least:
 - whether there are stray color, radius, shadow, or spacing values that bypass project tokens
 - whether simple utility UI has been kept intentionally minimal instead of being over-structured
 - whether generated user-facing content stayed in Simplified Chinese unless the user explicitly requested another language
+- whether protected requests that fail auth now redirect to login with the correct redirect target
 
 ## Missing or conflicting design rules
 

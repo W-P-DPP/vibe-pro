@@ -4,6 +4,11 @@ import type { ChangeEvent, DragEvent } from 'react'
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import type { Sheet2JSONOpts, WorkBook, WorkSheet } from 'xlsx'
 import { createMovedPath, getPreviewKind, getPreviewTooLargeMessage } from './file-preview'
+import {
+  getAuthToken,
+  redirectToLoginPage,
+  shouldRedirectToLogin,
+} from './lib/auth-session'
 import type {
   ApiResponse,
   ChunkUploadProgressResponse,
@@ -33,50 +38,6 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim().replace(/\/$/, ''
 const CHUNK_UPLOAD_THRESHOLD = 8 * 1024 * 1024
 const CHUNK_UPLOAD_SIZE = 2 * 1024 * 1024
 const PREVIEW_TOKEN_COOKIE_NAME = 'file_preview_token'
-const LOGIN_TEMPLATE_AUTH_STORAGE_KEY = 'login-template.auth'
-
-type StoredAuthSession = {
-  token: string
-  tokenType: 'Bearer'
-  expiresAt?: number
-}
-
-function isStoredAuthSession(value: unknown): value is StoredAuthSession {
-  if (!value || typeof value !== 'object') {
-    return false
-  }
-
-  const candidate = value as Record<string, unknown>
-  return (
-    typeof candidate.token === 'string' &&
-    candidate.token.length > 0 &&
-    candidate.tokenType === 'Bearer' &&
-    (candidate.expiresAt == null || typeof candidate.expiresAt === 'number')
-  )
-}
-
-function getAuthToken(): string | null {
-  if (typeof window === 'undefined') {
-    return null
-  }
-
-  const directToken = window.localStorage.getItem('token')?.trim()
-  if (directToken) {
-    return directToken
-  }
-
-  const loginSession = window.localStorage.getItem(LOGIN_TEMPLATE_AUTH_STORAGE_KEY)
-  if (!loginSession) {
-    return null
-  }
-
-  try {
-    const parsed = JSON.parse(loginSession) as unknown
-    return isStoredAuthSession(parsed) ? parsed.token : null
-  } catch {
-    return null
-  }
-}
 
 function getClientRelativePath(file: File, mode: UploadMode): string {
   if (mode === 'folder') {
@@ -140,6 +101,11 @@ async function requestJson<T>(pathName: string, init?: RequestInit): Promise<Api
   }
 
   const response = await fetch(`${API_BASE_URL}${pathName}`, { ...init, headers })
+  if (shouldRedirectToLogin(response.status)) {
+    redirectToLoginPage()
+    throw new Error('登录状态已失效，请重新登录')
+  }
+
   const payload = (await response.json()) as ApiResponse<T>
   if (!response.ok || payload.code !== 200) {
     throw new Error(payload.msg || '请求失败')
@@ -150,6 +116,11 @@ async function requestJson<T>(pathName: string, init?: RequestInit): Promise<Api
 
 async function requestPreview(relativePath: string, signal?: AbortSignal): Promise<Response> {
   const response = await fetch(buildPreviewUrl(relativePath), { headers: getAuthHeaders(), signal })
+
+  if (shouldRedirectToLogin(response.status)) {
+    redirectToLoginPage()
+    throw new Error('登录状态已失效，请重新登录')
+  }
 
   if (!response.ok) {
     const contentType = response.headers.get('content-type') ?? ''
@@ -301,19 +272,33 @@ export default function App() {
     setPreviewState({ status: 'loading', node: selectedNode, kind })
 
     if (kind === 'audio' || kind === 'video') {
-      const token = getAuthToken()
-      if (!token) {
-        setPreviewState({ status: 'error', node: selectedNode, message: '缺少登录凭证，请重新登录后再预览音视频。' })
-        return () => controller.abort()
-      }
+      void (async () => {
+        try {
+          const response = await requestPreview(selectedNode.relativePath, controller.signal)
+          await response.body?.cancel()
 
-      setPreviewAuthCookie(token)
-      setPreviewState({
-        status: 'ready',
-        node: selectedNode,
-        kind,
-        sourceUrl: buildPreviewUrl(selectedNode.relativePath),
-      })
+          const token = getAuthToken()
+          if (token) {
+            setPreviewAuthCookie(token)
+          }
+
+          setPreviewState({
+            status: 'ready',
+            node: selectedNode,
+            kind,
+            sourceUrl: buildPreviewUrl(selectedNode.relativePath),
+          })
+        } catch (error) {
+          if (!controller.signal.aborted) {
+            setPreviewState({
+              status: 'error',
+              node: selectedNode,
+              message: error instanceof Error ? error.message : '读取预览失败',
+            })
+          }
+        }
+      })()
+
       return () => {
         controller.abort()
         setPreviewAuthCookie(null)

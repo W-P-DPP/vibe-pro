@@ -5,6 +5,16 @@ import type {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios'
+import { getReusableAuthToken } from '@/lib/auth-session'
+import { redirectToLoginWithCurrentPage } from '@/lib/strict-menu-redirect'
+
+export interface RequestConfig<TData = unknown> extends AxiosRequestConfig<TData> {
+  requiresAuth?: boolean
+}
+
+type AuthAwareInternalRequestConfig<TData = unknown> = InternalAxiosRequestConfig<TData> & {
+  requiresAuth?: boolean
+}
 
 export class RequestError extends Error {
   status?: number
@@ -20,14 +30,21 @@ export class RequestError extends Error {
   }
 }
 
-function attachAuthToken(config: InternalAxiosRequestConfig) {
-  const token = localStorage.getItem('token')
+function attachAuthToken(config: AuthAwareInternalRequestConfig) {
+  const token = getReusableAuthToken()
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
 
   return config
+}
+
+export function shouldRedirectToLoginForRequestError(
+  status: number | undefined,
+  config?: { requiresAuth?: boolean },
+) {
+  return Boolean(config?.requiresAuth) && (status === 401 || status === 403)
 }
 
 function normalizeError(error: AxiosError<{ message?: string; msg?: string }>) {
@@ -46,6 +63,19 @@ function handleResponse<T>(response: AxiosResponse<T>) {
   return response.data
 }
 
+function handleResponseError(error: AxiosError<{ message?: string; msg?: string }>) {
+  if (
+    shouldRedirectToLoginForRequestError(
+      error.response?.status,
+      error.config as AuthAwareInternalRequestConfig | undefined,
+    )
+  ) {
+    redirectToLoginWithCurrentPage()
+  }
+
+  return Promise.reject(normalizeError(error))
+}
+
 const baseURL =
   import.meta.env.VITE_API_BASE_URL?.trim() || '/api'
 
@@ -61,35 +91,35 @@ export const requestClient: AxiosInstance = axios.create({
 requestClient.interceptors.request.use(attachAuthToken)
 requestClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<{ message?: string; msg?: string }>) => Promise.reject(normalizeError(error)),
+  handleResponseError,
 )
 
 export const request = {
-  get<T>(url: string, config?: AxiosRequestConfig) {
+  get<T>(url: string, config?: RequestConfig) {
     return requestClient.get<T>(url, config).then(handleResponse)
   },
   post<TResponse, TPayload = unknown>(
     url: string,
     data?: TPayload,
-    config?: AxiosRequestConfig<TPayload>,
+    config?: RequestConfig<TPayload>,
   ) {
     return requestClient.post<TResponse>(url, data, config).then(handleResponse)
   },
   put<TResponse, TPayload = unknown>(
     url: string,
     data?: TPayload,
-    config?: AxiosRequestConfig<TPayload>,
+    config?: RequestConfig<TPayload>,
   ) {
     return requestClient.put<TResponse>(url, data, config).then(handleResponse)
   },
   patch<TResponse, TPayload = unknown>(
     url: string,
     data?: TPayload,
-    config?: AxiosRequestConfig<TPayload>,
+    config?: RequestConfig<TPayload>,
   ) {
     return requestClient.patch<TResponse>(url, data, config).then(handleResponse)
   },
-  delete<T>(url: string, config?: AxiosRequestConfig) {
+  delete<T>(url: string, config?: RequestConfig) {
     return requestClient.delete<T>(url, config).then(handleResponse)
   },
 }

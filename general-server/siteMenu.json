@@ -31,22 +31,10 @@
     "strict": false,
     "hide": false,
     "remark": "",
-    "children": [
-      {
-        "id": 4,
-        "name": "端口映射",
-        "path": "/my-resume",
-        "icon": "icon-path",
-        "isTop": false,
-        "strict": false,
-        "hide": false,
-        "remark": "",
-        "children": []
-      }
-    ]
+    "children": []
   },
   {
-    "id": 5,
+    "id": 4,
     "name": "工具",
     "path": "/public/icons/tool.svg",
     "icon": "/public/icons/tool.svg",
@@ -56,7 +44,7 @@
     "remark": "",
     "children": [
       {
-        "id": 6,
+        "id": 5,
         "name": "JSON解析",
         "path": "https://www.json.cn/",
         "icon": "/public/icons/json.ico",
@@ -67,7 +55,7 @@
         "children": []
       },
       {
-        "id": 7,
+        "id": 6,
         "name": "二维码生成",
         "path": "https://cli.im/",
         "icon": "/public/icons/qr.ico",
@@ -80,7 +68,7 @@
     ]
   },
   {
-    "id": 8,
+    "id": 7,
     "name": "应用",
     "path": "",
     "icon": "/public/icons/app.svg",
@@ -90,7 +78,7 @@
     "remark": "",
     "children": [
       {
-        "id": 9,
+        "id": 8,
         "name": "日志记录",
         "path": "https://www.zwpsite.icu/date-logger/",
         "icon": "/public/icons/log-color.svg",
@@ -101,7 +89,7 @@
         "children": []
       },
       {
-        "id": 10,
+        "id": 9,
         "name": "openclaw",
         "path": "http://www.zwpsite.icu:8082/openclaw/",
         "icon": "/public/icons/openclaw.svg",
@@ -112,7 +100,7 @@
         "children": []
       },
       {
-        "id": 11,
+        "id": 10,
         "name": "file-server",
         "path": "http://www.zwpsite.icu:8082/file-server/",
         "icon": "/public/icons/file_server.svg",
@@ -123,7 +111,7 @@
         "children": []
       },
       {
-        "id": 12,
+        "id": 11,
         "name": "待办",
         "path": "http://www.zwpsite.icu:8082/todo/",
         "icon": "/public/icons/file_server.svg",
@@ -131,6 +119,17 @@
         "strict": true,
         "hide": true,
         "remark": "待办",
+        "children": []
+      },
+      {
+        "id": 12,
+        "name": "SelfAgent",
+        "path": "http://www.zwpsite.icu:8082/todo/",
+        "icon": "/public/icons/file_server.svg",
+        "isTop": false,
+        "strict": true,
+        "hide": true,
+        "remark": "与其蒸馏别人，不如蒸馏自己",
         "children": []
       }
     ]

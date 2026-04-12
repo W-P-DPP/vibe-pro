@@ -54,7 +54,7 @@ import {
   type ToolDirectoryContextValue,
   type ToolDirectoryLoadStatus,
 } from '@/data/tool-directory'
-import { buildStrictMenuLoginRedirectUrl } from '@/lib/strict-menu-redirect'
+import { resolveStrictMenuNavigationUrl } from '@/lib/strict-menu-redirect'
 
 const APP_SHELL_HEADER_CLASS = 'h-[var(--app-shell-header-height)] shrink-0'
 
@@ -73,7 +73,13 @@ function openMenuEntry(entry: SearchableSiteMenuEntry) {
   const normalizedPath = entry.path.trim()
 
   if (entry.strict) {
-    openSearch(buildStrictMenuLoginRedirectUrl(normalizedPath))
+    const targetUrl = resolveStrictMenuNavigationUrl(normalizedPath)
+
+    if (targetUrl) {
+      openSearch(targetUrl)
+      return
+    }
+
     return
   }
 

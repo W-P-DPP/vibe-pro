@@ -37,7 +37,7 @@ import {
   searchEngines,
   type ToolDirectoryContextValue,
 } from '@/data/tool-directory'
-import { buildStrictMenuLoginRedirectUrl } from '@/lib/strict-menu-redirect'
+import { resolveStrictMenuNavigationUrl } from '@/lib/strict-menu-redirect'
 
 const compactSectionNames = new Set(['网址大全', 'git', '工具'])
 
@@ -49,7 +49,13 @@ function openTool(path: string, fallbackName: string, strict = false) {
   const normalizedPath = path.trim()
 
   if (strict) {
-    openSearch(buildStrictMenuLoginRedirectUrl(normalizedPath))
+    const targetUrl = resolveStrictMenuNavigationUrl(normalizedPath)
+
+    if (targetUrl) {
+      openSearch(targetUrl)
+      return
+    }
+
     return
   }
 
