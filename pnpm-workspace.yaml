@@ -3,3 +3,4 @@ packages:
   - login-template
   - general-server
   - file-server
+  - agent-server
