@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, startTransition, useEffect, useMemo, useState } from 'react';
 import { Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from 'next-themes';
 import {
@@ -42,6 +42,7 @@ import {
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
+  ScrollArea,
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -56,7 +57,9 @@ import {
   Spinner,
 } from '@/components/ui';
 import { clearReusableAuthSession, hasReusableAuthToken } from '@/lib/auth-session';
+import { upsertSessionSummary } from '@/lib/chat-session-state';
 import { redirectToLoginWithCurrentPage } from '@/lib/login-redirect';
+import { createOneFlightLoader } from '@/lib/one-flight';
 import { getUserAvatarFallback, getUserDisplayName } from '@/lib/user-display';
 
 export type AppLayoutOutletContext = {
@@ -66,10 +69,25 @@ export type AppLayoutOutletContext = {
   currentKnowledgeBaseIds: number[];
   currentUser: AgentCurrentUserResponse | null;
   refreshSessions: () => Promise<ChatSessionItem[]>;
+  setPageHeaderContent: (content: ReactNode | null) => void;
   sessions: ChatSessionItem[];
   sessionsLoading: boolean;
+  syncSession: (session: ChatSessionItem) => void;
   workspaceLoading: boolean;
 };
+
+const loadBootstrapSessions = createOneFlightLoader(() => getChatSessions());
+const loadBootstrapWorkspace = createOneFlightLoader(async () => {
+  const [agentResponse, currentUserResponse] = await Promise.all([
+    getAgentMe(),
+    getAgentCurrentUser(),
+  ]);
+
+  return {
+    agentResponse,
+    currentUserResponse,
+  };
+});
 
 function formatDateTime(value?: string | null) {
   if (!value) {
@@ -116,6 +134,7 @@ export function AppLayout() {
   const [currentUser, setCurrentUser] = useState<AgentCurrentUserResponse | null>(null);
   const [currentKnowledgeBaseIds, setCurrentKnowledgeBaseIds] = useState<number[]>([]);
   const [operationsOpen, setOperationsOpen] = useState(false);
+  const [pageHeaderContent, setPageHeaderContent] = useState<ReactNode | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const activeSessionId = useMemo(() => {
@@ -141,13 +160,17 @@ export function AppLayout() {
     return sessionList;
   };
 
+  const syncSession = (session: ChatSessionItem) => {
+    setSessions((current) => upsertSessionSummary(current, session));
+  };
+
   useEffect(() => {
     let active = true;
 
     async function loadSessions() {
       try {
         setSessionsLoading(true);
-        const sessionList = await getChatSessions();
+        const sessionList = await loadBootstrapSessions();
         if (!active) {
           return;
         }
@@ -175,10 +198,7 @@ export function AppLayout() {
     async function loadWorkspaceData() {
       try {
         setWorkspaceLoading(true);
-        const [agentResponse, currentUserResponse] = await Promise.all([
-          getAgentMe(),
-          getAgentCurrentUser(),
-        ]);
+        const { agentResponse, currentUserResponse } = await loadBootstrapWorkspace();
         if (!active) {
           return;
         }
@@ -248,7 +268,7 @@ export function AppLayout() {
     try {
       setCreatingSession(true);
       const created = await createChatSession(title);
-      setSessions((current) => [created, ...current.filter((item) => item.id !== created.id)]);
+      setSessions((current) => upsertSessionSummary(current, created));
       startTransition(() => {
         navigate(`/chat/${created.id}`);
       });
@@ -294,8 +314,10 @@ export function AppLayout() {
     currentKnowledgeBaseIds,
     currentUser,
     refreshSessions,
+    setPageHeaderContent,
     sessions,
     sessionsLoading,
+    syncSession,
     workspaceLoading,
   };
 
@@ -329,7 +351,8 @@ export function AppLayout() {
                 <span className="group-data-[collapsible=icon]:hidden">新建会话</span>
               </Button>
 
-              <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+              <ScrollArea className="min-h-0 flex-1">
+                <div className="space-y-2 pr-2">
                 {sessionsLoading ? (
                   <div className="flex items-center gap-2 px-2 text-sm text-sidebar-foreground/70">
                     <Spinner className="size-4" />
@@ -392,7 +415,8 @@ export function AppLayout() {
                     </div>
                   );
                 })}
-              </div>
+                </div>
+              </ScrollArea>
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
@@ -511,6 +535,9 @@ export function AppLayout() {
           <div className="min-w-0 flex-1">
             <div className="truncate text-base font-semibold text-foreground">{pageTitle}</div>
           </div>
+          {pageHeaderContent ? (
+            <div className="min-w-0 flex-1 md:max-w-sm">{pageHeaderContent}</div>
+          ) : null}
           <div className="hidden items-center gap-2 md:flex">
             <div className="rounded-full border border-border/70 px-3 py-1 text-xs text-muted-foreground">
               资料范围 {currentKnowledgeBaseIds.length}

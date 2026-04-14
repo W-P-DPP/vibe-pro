@@ -57,8 +57,8 @@ export type ChatStreamEvent =
   | {
       event: 'message-complete';
       data: {
-        messageId: number;
-        content: string;
+        message: ChatMessageResponseDto;
+        session: ChatSessionResponseDto;
       };
     }
   | {

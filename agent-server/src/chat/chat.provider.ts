@@ -135,3 +135,7 @@ export async function* streamAgentReply(input: {
     }
   }
 }
+
+export const chatProvider = {
+  streamAgentReply,
+};

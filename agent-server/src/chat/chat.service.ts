@@ -8,7 +8,7 @@ import type {
   ChatStreamEvent,
   StreamChatSessionRequestDto,
 } from './chat.dto.ts';
-import { streamAgentReply } from './chat.provider.ts';
+import { chatProvider } from './chat.provider.ts';
 import { chatRepository } from './chat.repository.ts';
 
 export class ChatBusinessError extends Error {
@@ -86,6 +86,19 @@ function buildSessionTitleFromMessage(message: string) {
   return normalizeSessionTitle(message.replace(/\s+/g, ' ').trim().slice(0, 24) || '新会话');
 }
 
+async function assertModelAvailable(
+  provider: NonNullable<StreamChatSessionRequestDto['provider']>,
+  model: string,
+) {
+  const catalog = await agentService.getProviderModels(provider);
+  if (!catalog.models.some((item) => item.model === model)) {
+    throw new ChatBusinessError(
+      '当前选择的模型不可用，请刷新模型列表后重试',
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+}
+
 export class ChatService {
   async getSessions(ownerUserId: number) {
     const sessions = await chatRepository.listSessions(ownerUserId);
@@ -159,10 +172,13 @@ export class ChatService {
       typeof input.model === 'string' && input.model.trim()
         ? input.model.trim()
         : agent.defaultModel;
+
+    await assertModelAvailable(provider, model);
+
     const sessionTitle =
       session.title === '新会话' ? buildSessionTitleFromMessage(question) : session.title;
 
-    await chatRepository.updateSessionActivity(
+    const updatedSession = await chatRepository.updateSessionActivity(
       currentUser.userId,
       normalizedSessionId,
       sessionTitle,
@@ -196,10 +212,10 @@ export class ChatService {
     try {
       const retrievedItems = selectedKnowledgeBaseIds.length
         ? await knowledgeService.searchAcrossKnowledgeBases(
-            currentUser.userId,
-            selectedKnowledgeBaseIds,
-            question,
-          )
+          currentUser.userId,
+          selectedKnowledgeBaseIds,
+          question,
+        )
         : [];
 
       yield {
@@ -217,7 +233,7 @@ export class ChatService {
         .map(toMessageResponse);
 
       let assistantContent = '';
-      for await (const chunk of streamAgentReply({
+      for await (const chunk of chatProvider.streamAgentReply({
         provider,
         model,
         systemPrompt: agent.systemPrompt,
@@ -237,11 +253,32 @@ export class ChatService {
         };
       }
 
-      const assistantMessage = await chatRepository.createMessage({
+      const finalAssistantContent = assistantContent.trim();
+      if (!finalAssistantContent) {
+        await chatRepository.completeRun({
+          ownerUserId: currentUser.userId,
+          runId: run.id,
+          status: 'failed',
+          retrievedChunkCount: retrievedItems.length,
+          errorMessage: '当前模型未返回有效回复',
+        });
+
+        yield {
+          event: 'error',
+          data: {
+            runId: run.id,
+            status: 'failed',
+            message: '当前模型未返回有效回复，请重试或切换模型',
+          },
+        };
+        return;
+      }
+
+      const assistantMessageEntity = await chatRepository.createMessage({
         ownerUserId: currentUser.userId,
         sessionId: normalizedSessionId,
         role: 'assistant',
-        content: assistantContent.trim() || '本次未生成有效回复。',
+        content: finalAssistantContent,
         provider,
         model,
         runId: run.id,
@@ -253,13 +290,20 @@ export class ChatService {
         status: 'success',
         retrievedChunkCount: retrievedItems.length,
       });
-      await chatRepository.updateSessionActivity(currentUser.userId, normalizedSessionId);
+      const completedSession = await chatRepository.updateSessionActivity(
+        currentUser.userId,
+        normalizedSessionId,
+      );
 
       yield {
         event: 'message-complete',
         data: {
-          messageId: assistantMessage.id,
-          content: assistantMessage.content,
+          message: toMessageResponse(assistantMessageEntity),
+          session: toSessionResponse(
+            (completedSession ?? updatedSession ?? session) as Awaited<
+              ReturnType<typeof chatRepository.listSessions>
+            >[number],
+          ),
         },
       };
 

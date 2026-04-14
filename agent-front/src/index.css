@@ -69,6 +69,14 @@
   --shadow-2xl: 0px 4px 10px 0px hsl(240 30% 25% / 0.3);
   --app-shell-header-height: 3.75rem;
   --app-shell-section-scroll-offset: calc(var(--app-shell-header-height) + 1.5rem);
+  --scrollbar-size: 0.75rem;
+  --scrollbar-size-compact: 0.625rem;
+  --scrollbar-track: color-mix(in oklab, var(--muted) 72%, transparent);
+  --scrollbar-track-hover: color-mix(in oklab, var(--muted) 84%, transparent);
+  --scrollbar-thumb: color-mix(in oklab, var(--border) 74%, var(--foreground) 18%);
+  --scrollbar-thumb-hover: color-mix(in oklab, var(--border) 52%, var(--foreground) 30%);
+  --scrollbar-thumb-active: color-mix(in oklab, var(--border) 40%, var(--foreground) 42%);
+  --scrollbar-corner: transparent;
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 }
@@ -234,6 +242,62 @@ p {
 
 code {
   font-family: var(--font-mono);
+}
+
+@layer components {
+  .scrollbar-theme,
+  .scrollbar-theme-compact {
+    --_scrollbar-size: var(--scrollbar-size);
+    --_scrollbar-radius: 999px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  .scrollbar-theme-compact {
+    --_scrollbar-size: var(--scrollbar-size-compact);
+  }
+
+  .scrollbar-theme::-webkit-scrollbar,
+  .scrollbar-theme-compact::-webkit-scrollbar {
+    width: var(--_scrollbar-size);
+    height: var(--_scrollbar-size);
+  }
+
+  .scrollbar-theme::-webkit-scrollbar-track,
+  .scrollbar-theme-compact::-webkit-scrollbar-track {
+    border-radius: var(--_scrollbar-radius);
+    background: var(--scrollbar-track);
+  }
+
+  .scrollbar-theme:hover::-webkit-scrollbar-track,
+  .scrollbar-theme-compact:hover::-webkit-scrollbar-track {
+    background: var(--scrollbar-track-hover);
+  }
+
+  .scrollbar-theme::-webkit-scrollbar-thumb,
+  .scrollbar-theme-compact::-webkit-scrollbar-thumb {
+    border: max(2px, calc(var(--_scrollbar-size) * 0.18)) solid transparent;
+    border-radius: var(--_scrollbar-radius);
+    background: var(--scrollbar-thumb);
+    background-clip: padding-box;
+  }
+
+  .scrollbar-theme:hover::-webkit-scrollbar-thumb,
+  .scrollbar-theme-compact:hover::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb-hover);
+    background-clip: padding-box;
+  }
+
+  .scrollbar-theme::-webkit-scrollbar-thumb:active,
+  .scrollbar-theme-compact::-webkit-scrollbar-thumb:active {
+    background: var(--scrollbar-thumb-active);
+    background-clip: padding-box;
+  }
+
+  .scrollbar-theme::-webkit-scrollbar-corner,
+  .scrollbar-theme-compact::-webkit-scrollbar-corner {
+    background: var(--scrollbar-corner);
+  }
 }
 
 @layer base {

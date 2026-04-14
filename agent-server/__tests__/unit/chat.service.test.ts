@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import { agentService } from '../../src/agent/agent.service.ts';
 import { chatRepository } from '../../src/chat/chat.repository.ts';
+import { chatProvider } from '../../src/chat/chat.provider.ts';
 import { ChatBusinessError, chatService } from '../../src/chat/chat.service.ts';
 import { knowledgeService } from '../../src/knowledge/knowledge.service.ts';
 
@@ -10,6 +11,12 @@ async function collectEvents<T>(iterator: AsyncGenerator<T>) {
     events.push(event);
   }
   return events;
+}
+
+async function* streamChunks(...chunks: string[]) {
+  for (const chunk of chunks) {
+    yield chunk;
+  }
 }
 
 describe('chatService session identifiers', () => {
@@ -64,14 +71,26 @@ describe('chatService session identifiers', () => {
     expect(result).toEqual({ id: 'uuid-delete-1' });
   });
 
-  it('streams replies with uuid session identifiers', async () => {
+  it('streams replies with uuid session identifiers and completion metadata', async () => {
     const createRunSpy = jest.spyOn(chatRepository, 'createRun').mockResolvedValue({ id: 99 } as never);
+    const createMessageSpy = jest
+      .spyOn(chatRepository, 'createMessage')
+      .mockResolvedValueOnce({ id: 101 } as never)
+      .mockResolvedValueOnce({
+        id: 102,
+        role: 'assistant',
+        content: 'hello world',
+        provider: 'openai',
+        model: 'gpt-5',
+        createTime: new Date('2026-04-13T08:01:00.000Z'),
+      } as never);
 
     jest.spyOn(chatRepository, 'getSessionById').mockResolvedValue({
       id: 1,
       sessionId: 'uuid-stream-1',
       ownerUserId: 7,
-      title: 'new-session',
+      title: '新会话',
+      createTime: new Date('2026-04-13T08:00:00.000Z'),
     } as never);
     jest.spyOn(agentService, 'getDefaultAgentProfile').mockResolvedValue({
       id: 3,
@@ -80,17 +99,29 @@ describe('chatService session identifiers', () => {
       defaultModel: 'gpt-5',
     } as never);
     jest.spyOn(agentService, 'listBindings').mockResolvedValue([]);
+    jest.spyOn(agentService, 'getProviderModels').mockResolvedValue({
+      provider: 'openai',
+      defaultModel: 'gpt-5',
+      models: [{ value: 'gpt-5', label: 'gpt-5', provider: 'openai', model: 'gpt-5' }],
+    });
     jest.spyOn(knowledgeService, 'searchAcrossKnowledgeBases').mockResolvedValue([]);
-    jest.spyOn(chatRepository, 'updateSessionActivity').mockResolvedValue({
-      id: 1,
-      sessionId: 'uuid-stream-1',
-    } as never);
     jest
-      .spyOn(chatRepository, 'createMessage')
-      .mockResolvedValueOnce({ id: 101 } as never)
+      .spyOn(chatRepository, 'updateSessionActivity')
       .mockResolvedValueOnce({
-        id: 102,
-        content: 'hello world',
+        id: 1,
+        sessionId: 'uuid-stream-1',
+        ownerUserId: 7,
+        title: 'hello',
+        lastMessageAt: new Date('2026-04-13T08:00:10.000Z'),
+        createTime: new Date('2026-04-13T08:00:00.000Z'),
+      } as never)
+      .mockResolvedValueOnce({
+        id: 1,
+        sessionId: 'uuid-stream-1',
+        ownerUserId: 7,
+        title: 'hello',
+        lastMessageAt: new Date('2026-04-13T08:00:20.000Z'),
+        createTime: new Date('2026-04-13T08:00:00.000Z'),
       } as never);
     jest.spyOn(chatRepository, 'listMessages').mockResolvedValue([
       {
@@ -103,6 +134,7 @@ describe('chatService session identifiers', () => {
       } as never,
     ]);
     jest.spyOn(chatRepository, 'completeRun').mockResolvedValue({ durationMs: 25 } as never);
+    jest.spyOn(chatProvider, 'streamAgentReply').mockImplementation(() => streamChunks('hello ', 'world'));
 
     const events = await collectEvents(
       chatService.streamSessionReply(
@@ -122,16 +154,146 @@ describe('chatService session identifiers', () => {
         sessionId: 'uuid-stream-1',
       }),
     );
+    expect(createMessageSpy).toHaveBeenCalledTimes(2);
     expect(events[0]).toMatchObject({
       event: 'run-start',
       data: expect.objectContaining({
         sessionId: 'uuid-stream-1',
       }),
     });
+    expect(events.find((item) => item.event === 'message-complete')).toMatchObject({
+      event: 'message-complete',
+      data: {
+        message: expect.objectContaining({
+          id: 102,
+          content: 'hello world',
+        }),
+        session: expect.objectContaining({
+          id: 'uuid-stream-1',
+          title: 'hello',
+        }),
+      },
+    });
     expect(events.at(-1)).toMatchObject({
       event: 'run-complete',
       data: expect.objectContaining({
         status: 'success',
+      }),
+    });
+  });
+
+  it('rejects invalid selected models before running the stream', async () => {
+    jest.spyOn(chatRepository, 'getSessionById').mockResolvedValue({
+      id: 1,
+      sessionId: 'uuid-invalid-model',
+      ownerUserId: 7,
+      title: '新会话',
+    } as never);
+    jest.spyOn(agentService, 'getDefaultAgentProfile').mockResolvedValue({
+      id: 3,
+      systemPrompt: 'system',
+      defaultProvider: 'openai',
+      defaultModel: 'gpt-5',
+    } as never);
+    jest.spyOn(agentService, 'listBindings').mockResolvedValue([]);
+    jest.spyOn(agentService, 'getProviderModels').mockResolvedValue({
+      provider: 'openai',
+      defaultModel: 'gpt-5',
+      models: [{ value: 'gpt-5', label: 'gpt-5', provider: 'openai', model: 'gpt-5' }],
+    });
+
+    await expect(
+      collectEvents(
+        chatService.streamSessionReply(
+          { userId: 7, username: 'alice' },
+          'uuid-invalid-model',
+          {
+            message: 'hello',
+            knowledgeBaseIds: [],
+            provider: 'openai',
+            model: 'gpt-4.1',
+          },
+        ),
+      ),
+    ).rejects.toEqual(
+      expect.objectContaining({
+        name: ChatBusinessError.name,
+        statusCode: 400,
+      }),
+    );
+  });
+
+  it('treats empty streamed replies as failures without persisting assistant messages', async () => {
+    const createMessageSpy = jest
+      .spyOn(chatRepository, 'createMessage')
+      .mockResolvedValueOnce({ id: 101 } as never);
+
+    jest.spyOn(chatRepository, 'getSessionById').mockResolvedValue({
+      id: 1,
+      sessionId: 'uuid-empty-reply',
+      ownerUserId: 7,
+      title: '新会话',
+      createTime: new Date('2026-04-13T08:00:00.000Z'),
+    } as never);
+    jest.spyOn(agentService, 'getDefaultAgentProfile').mockResolvedValue({
+      id: 3,
+      systemPrompt: 'system',
+      defaultProvider: 'openai',
+      defaultModel: 'gpt-5',
+    } as never);
+    jest.spyOn(agentService, 'listBindings').mockResolvedValue([]);
+    jest.spyOn(agentService, 'getProviderModels').mockResolvedValue({
+      provider: 'openai',
+      defaultModel: 'gpt-5',
+      models: [{ value: 'gpt-5', label: 'gpt-5', provider: 'openai', model: 'gpt-5' }],
+    });
+    jest.spyOn(knowledgeService, 'searchAcrossKnowledgeBases').mockResolvedValue([]);
+    jest.spyOn(chatRepository, 'updateSessionActivity').mockResolvedValue({
+      id: 1,
+      sessionId: 'uuid-empty-reply',
+      ownerUserId: 7,
+      title: 'hello',
+      lastMessageAt: new Date('2026-04-13T08:00:10.000Z'),
+      createTime: new Date('2026-04-13T08:00:00.000Z'),
+    } as never);
+    jest.spyOn(chatRepository, 'createRun').mockResolvedValue({ id: 99 } as never);
+    jest.spyOn(chatRepository, 'listMessages').mockResolvedValue([
+      {
+        id: 101,
+        role: 'user',
+        content: 'hello',
+        provider: '',
+        model: '',
+        createTime: new Date('2026-04-13T08:00:00.000Z'),
+      } as never,
+    ]);
+    const completeRunSpy = jest.spyOn(chatRepository, 'completeRun').mockResolvedValue({ durationMs: 12 } as never);
+    jest.spyOn(chatProvider, 'streamAgentReply').mockImplementation(() => streamChunks());
+
+    const events = await collectEvents(
+      chatService.streamSessionReply(
+        { userId: 7, username: 'alice' },
+        'uuid-empty-reply',
+        {
+          message: 'hello',
+          knowledgeBaseIds: [],
+          provider: 'openai',
+          model: 'gpt-5',
+        },
+      ),
+    );
+
+    expect(createMessageSpy).toHaveBeenCalledTimes(1);
+    expect(completeRunSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        runId: 99,
+        status: 'failed',
+      }),
+    );
+    expect(events.at(-1)).toMatchObject({
+      event: 'error',
+      data: expect.objectContaining({
+        status: 'failed',
       }),
     });
   });

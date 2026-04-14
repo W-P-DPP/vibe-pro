@@ -1,19 +1,21 @@
 import { request } from '@/api/request';
 
+export type AgentProvider = 'openai' | 'anthropic';
+
 export type AgentBinding = {
   knowledgeBaseId: number;
   name: string;
 };
 
-export type AgentProvider = 'openai' | 'anthropic';
-
 export type AgentModelOption = {
   value: string;
   label: string;
+  provider: AgentProvider;
+  model: string;
 };
 
-export type AgentProviderModelsResponse = {
-  provider: AgentProvider;
+export type AgentModelsResponse = {
+  defaultProvider: AgentProvider;
   defaultModel: string;
   models: AgentModelOption[];
 };
@@ -54,9 +56,9 @@ export function getAgentCurrentUser() {
     .then((res) => res.data);
 }
 
-export function getAgentProviderModels(provider: AgentProvider) {
+export function getAgentModels() {
   return request
-    .get<ApiEnvelope<AgentProviderModelsResponse>>(`/agent/providers/${provider}/models`)
+    .get<ApiEnvelope<AgentModelsResponse>>('/agent/models')
     .then((res) => res.data);
 }
 

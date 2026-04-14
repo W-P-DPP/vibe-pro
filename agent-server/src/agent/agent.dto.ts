@@ -33,6 +33,14 @@ export interface UpdateAgentBindingsRequestDto {
 export interface AgentModelOptionDto {
   value: string;
   label: string;
+  provider: AgentProvider;
+  model: string;
+}
+
+export interface AgentModelsResponseDto {
+  defaultProvider: AgentProvider;
+  defaultModel: string;
+  models: AgentModelOptionDto[];
 }
 
 export interface AgentProviderModelsResponseDto {

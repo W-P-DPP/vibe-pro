@@ -7,6 +7,9 @@ function resolveSessionId(req: Request) {
   return typeof req.params.id === 'string' ? req.params.id.trim() : '';
 }
 
+
+
+
 export async function getChatSessions(req: Request, res: Response) {
   try {
     const currentUser = resolveCurrentUser(req);

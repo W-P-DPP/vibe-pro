@@ -36,7 +36,7 @@ export type ChatStreamEvent =
       data: { knowledgeBaseIds: number[]; count: number; items: KnowledgeSearchItem[] };
     }
   | { event: 'token'; data: { content: string } }
-  | { event: 'message-complete'; data: { messageId: number; content: string } }
+  | { event: 'message-complete'; data: { message: ChatMessageItem; session: ChatSessionItem } }
   | { event: 'run-complete'; data: { runId: number; status: 'success'; durationMs: number } }
   | { event: 'error'; data: { runId?: number; status?: 'failed'; message: string } };
 
