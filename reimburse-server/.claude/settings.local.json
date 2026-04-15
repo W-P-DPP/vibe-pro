@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp -R \"C:/Users/admin/Desktop/my/super-pro/agent-server\" \"C:/Users/admin/Desktop/my/super-pro/reimburse-server\")",
+      "Bash(cp -R \"C:/Users/admin/Desktop/my/super-pro/agent-front\" \"C:/Users/admin/Desktop/my/super-pro/reimburse-front\")"
+    ]
+  }
+}

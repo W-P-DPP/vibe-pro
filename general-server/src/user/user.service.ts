@@ -251,10 +251,15 @@ function normalizeOptionalStatus(value: unknown): number | undefined {
 
 function normalizeRole(value: unknown): UserRoleEnum {
   if (value === undefined) {
-    return 'guest' as UserRoleEnum;
+    return UserRoleEnum.Employee;
   }
 
-  if (value === 'admin' || value === 'guest') {
+  if (
+    value === UserRoleEnum.Admin ||
+    value === UserRoleEnum.Employee ||
+    value === UserRoleEnum.Approver ||
+    value === UserRoleEnum.Guest
+  ) {
     return value as UserRoleEnum;
   }
 
@@ -263,7 +268,7 @@ function normalizeRole(value: unknown): UserRoleEnum {
     {
       nodePath: 'user',
       field: 'role',
-      reason: '用户角色只允许为 admin 或 guest',
+      reason: '用户角色只允许为 admin、employee、approver 或 guest',
       value,
     },
     HttpStatus.BAD_REQUEST,
@@ -538,7 +543,7 @@ export class UserService {
       email: payload.email ?? '',
       phone: payload.phone ?? '',
       status: payload.status ?? 1,
-      role: payload.role ?? ('guest' as UserRoleEnum),
+      role: payload.role ?? UserRoleEnum.Employee,
       passwordHash: hashPassword(payload.password ?? DEFAULT_LOGIN_PASSWORD),
       ...(payload.remark !== undefined ? { remark: payload.remark } : {}),
     });
@@ -668,6 +673,7 @@ export class UserService {
         {
           userId: entity.id,
           username: entity.username,
+          role: entity.role,
         },
         LOGIN_TOKEN_EXPIRES_IN,
       ),
@@ -685,7 +691,7 @@ export class UserService {
       username: payload.username,
       nickname: payload.username,
       status: 1,
-      role: 'guest' as UserRoleEnum,
+      role: UserRoleEnum.Employee,
       password: payload.password,
     });
   }
