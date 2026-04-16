@@ -5,6 +5,7 @@ import path from 'node:path';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, __dirname, '');
+  const devPort = Number(env.VITE_DEV_PORT);
 
   return {
     base: '/agent',
@@ -17,7 +18,7 @@ export default defineConfig(({ mode }) => {
     server: {
       allowedHosts: ['www.zwpsite.icu'],
       host: '0.0.0.0',
-      port: 56448,
+      port: Number.isFinite(devPort) && devPort > 0 ? devPort : 15697,
       proxy: {
         '/agent-api': {
           target: env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:30012',

@@ -10,6 +10,7 @@ import {
 } from 'crypto';
 import { HttpStatus } from '../../utils/constant/HttpStatus.ts';
 import { generateToken } from '../../utils/middleware/jwtMiddleware.ts';
+import { UserRoleEnum } from './user.dto.ts';
 import type {
   CreateUserRequestDto,
   GetLoginPublicKeyResponseDto,
@@ -18,7 +19,6 @@ import type {
   RegisterUserRequestDto,
   UpdateUserRequestDto,
   UserListDto,
-  UserRoleEnum,
   UserResponseDto,
   UserValidationErrorContextDto,
 } from './user.dto.ts';

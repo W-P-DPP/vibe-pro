@@ -11,6 +11,10 @@ function readSource(relativePath: string) {
   return readFileSync(resolve(srcDir, relativePath), 'utf8');
 }
 
+function readSharedUiSource(relativePath: string) {
+  return readFileSync(resolve(srcDir, '../../packages/shared-ui/src/components/ui', relativePath), 'utf8');
+}
+
 describe('chat scroll containment', () => {
   it('keeps the message list and long message bubbles inside bounded scroll areas', () => {
     const source = readSource('./pages/ChatPage.tsx');
@@ -54,10 +58,10 @@ describe('scrollbar theme coverage', () => {
   });
 
   it('applies the shared scrollbar theme to common list surfaces', () => {
-    const commandSource = readSource('./components/ui/command.tsx');
-    const selectSource = readSource('./components/ui/select.tsx');
-    const comboboxSource = readSource('./components/ui/combobox.tsx');
-    const sidebarSource = readSource('./components/ui/sidebar.tsx');
+    const commandSource = readSharedUiSource('command.tsx');
+    const selectSource = readSharedUiSource('select.tsx');
+    const comboboxSource = readSharedUiSource('combobox.tsx');
+    const sidebarSource = readSharedUiSource('sidebar.tsx');
 
     expect(commandSource).toContain('scrollbar-theme scrollbar-theme-compact');
     expect(selectSource).toContain('scrollbar-theme scrollbar-theme-compact');

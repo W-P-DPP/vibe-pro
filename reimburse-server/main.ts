@@ -1,19 +1,14 @@
-import dotenv from 'dotenv';
-import path from 'path';
 import { createApp } from './app.ts';
 import RedisService from "./utils/Redis.ts";
 import initDataBase from "./utils/mysql.ts";
 import "./eventRegister.ts";
+import { loadProfileEnv } from '@super-pro/shared-server';
 
 
 async function injectEnv() {
-  const env = process.env.NODE_ENV || 'development';
+  const { profile } = loadProfileEnv();
 
-  dotenv.config({
-    path: path.resolve(process.cwd(), `.env.${env}`)
-  });
-
-  console.log('ENV:', env);
+  console.log('ENV:', profile);
   console.log('PORT:', process.env.PORT);
 }
 

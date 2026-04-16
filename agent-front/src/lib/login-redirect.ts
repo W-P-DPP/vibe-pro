@@ -1,33 +1,24 @@
+import {
+  WORKSPACE_LOGIN_PATH,
+  WORKSPACE_PRODUCTION_ORIGIN,
+  joinUrl,
+} from '@super-pro/shared-constants';
+import {
+  buildLoginRedirectUrl as buildSharedLoginRedirectUrl,
+  normalizeAbsoluteUrl,
+  redirectToUrl,
+} from '@super-pro/shared-web';
 import { hasReusableAuthToken } from './auth-session';
-
-const DEFAULT_LOGIN_URL = 'http://www.zwpsite.icu:8082/login/';
-
-function normalizeAbsoluteUrl(input: string) {
-  const trimmed = input.trim();
-  if (!trimmed) {
-    return '';
-  }
-
-  try {
-    return new URL(trimmed).toString();
-  } catch {
-    if (typeof window !== 'undefined') {
-      return new URL(trimmed, window.location.origin).toString();
-    }
-
-    return trimmed;
-  }
-}
 
 export function getLoginUrl() {
   const configured = import.meta.env.VITE_LOGIN_URL?.trim();
-  return normalizeAbsoluteUrl(configured || DEFAULT_LOGIN_URL);
+  return normalizeAbsoluteUrl(
+    configured || joinUrl(WORKSPACE_PRODUCTION_ORIGIN, WORKSPACE_LOGIN_PATH),
+  );
 }
 
 export function buildLoginRedirectUrl(target: string) {
-  const loginUrl = new URL(getLoginUrl());
-  loginUrl.searchParams.set('redirect', target);
-  return loginUrl.toString();
+  return buildSharedLoginRedirectUrl(getLoginUrl(), target);
 }
 
 export function buildCurrentPageLoginRedirectUrl() {
@@ -39,13 +30,7 @@ export function buildCurrentPageLoginRedirectUrl() {
 }
 
 export function redirectToLoginWithCurrentPage() {
-  const nextUrl = buildCurrentPageLoginRedirectUrl();
-
-  if (typeof window !== 'undefined') {
-    window.location.assign(nextUrl);
-  }
-
-  return nextUrl;
+  return redirectToUrl(buildCurrentPageLoginRedirectUrl());
 }
 
 export function resolveProtectedTargetUrl(target: string) {

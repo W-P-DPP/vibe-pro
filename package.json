@@ -4,6 +4,7 @@
   "packageManager": "pnpm@10.32.1",
   "scripts": {
     "dev": "turbo run dev --parallel",
+    "dev:shared": "turbo run dev --filter=@super-pro/shared-* --parallel",
     "dev:agent-front": "pnpm --filter @super-pro/agent-front dev",
     "dev:agent-server": "pnpm --filter @super-pro/agent-server dev",
     "dev:reimburse-front": "pnpm --filter @super-pro/reimburse-front dev",
@@ -20,13 +21,16 @@
     "start:agent-server": "pnpm --filter @super-pro/agent-server start",
     "start:reimburse-server": "pnpm --filter @super-pro/reimburse-server start",
     "build:agent-front": "pnpm --filter @super-pro/agent-front build",
+    "build:shared": "turbo run build --filter=@super-pro/shared-*",
     "test": "turbo run test",
+    "test:shared": "turbo run test --filter=@super-pro/shared-*",
     "test:agent-server": "pnpm --filter @super-pro/agent-server test",
     "test:reimburse-server": "pnpm --filter @super-pro/reimburse-server test",
     "test:unit": "pnpm --filter @super-pro/server test:unit",
     "test:integration": "pnpm --filter @super-pro/server test:integration",
     "test:coverage": "pnpm --filter @super-pro/server test:coverage",
-    "stress": "pnpm --filter @super-pro/server stress"
+    "stress": "pnpm --filter @super-pro/server stress",
+    "typecheck:shared": "turbo run build --filter=@super-pro/tsconfig --filter=@super-pro/shared-*"
   },
   "devDependencies": {
     "turbo": "^2.5.8"

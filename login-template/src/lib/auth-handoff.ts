@@ -1,5 +1,6 @@
 import type { LoginResponse } from '@/lib/auth-client'
-import { createStoredAuthSession, type StoredAuthSession } from '@/lib/auth-storage'
+import { createStoredAuthSession } from '@/lib/auth-storage'
+import type { StoredAuthSession } from '@super-pro/shared-types'
 
 const AUTH_HANDOFF_WINDOW_NAME_KEY = 'super-pro.auth-handoff'
 const AUTH_HANDOFF_QUERY_KEY = 'spauth'

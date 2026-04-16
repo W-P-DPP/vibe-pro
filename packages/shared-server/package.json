@@ -1,0 +1,22 @@
+{
+  "name": "@super-pro/shared-server",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@super-pro/shared-constants": "workspace:*",
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.4"
+  }
+}

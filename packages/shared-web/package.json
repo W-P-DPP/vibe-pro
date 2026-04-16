@@ -1,0 +1,23 @@
+{
+  "name": "@super-pro/shared-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@super-pro/shared-constants": "workspace:*",
+    "@super-pro/shared-types": "workspace:*",
+    "axios": "^1.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.4"
+  }
+}

@@ -1,7 +1,11 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": [
-    "pnpm-workspace.yaml"
+    "pnpm-workspace.yaml",
+    "**/.env.development",
+    "**/.env.production",
+    "**/.env.development.example",
+    "**/.env.production.example"
   ],
   "tasks": {
     "build": {

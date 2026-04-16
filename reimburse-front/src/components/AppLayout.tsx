@@ -1,12 +1,34 @@
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import { useTheme } from 'next-themes';
-import { ClipboardCheckIcon, LogOutIcon, MoonStarIcon, ReceiptTextIcon, SunMediumIcon } from 'lucide-react';
+import {
+  ClipboardCheckIcon,
+  LogOutIcon,
+  MoonStarIcon,
+  ReceiptTextIcon,
+  SunMediumIcon,
+} from 'lucide-react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarProvider, SidebarRail, SidebarTrigger } from '@/components/ui';
+import {
+  Button,
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarTrigger,
+} from '@/components/ui';
+import { getCurrentUser, type CurrentUserResponse } from '@/api/modules/reimbursement';
 import { clearReusableAuthSession, hasReusableAuthToken } from '@/lib/auth-session';
 import { redirectToLoginWithCurrentPage } from '@/lib/login-redirect';
-import { getCurrentUser, type CurrentUserResponse } from '@/api/modules/reimbursement';
 
 const navItems = [
   { label: '我的报销', path: '/reimbursements', icon: ReceiptTextIcon },
@@ -40,6 +62,7 @@ export function AppLayout() {
     }
 
     void loadCurrentUser();
+
     return () => {
       active = false;
     };
@@ -49,12 +72,15 @@ export function AppLayout() {
     if (location.pathname.startsWith('/approvals')) {
       return '审批列表';
     }
+
     if (location.pathname.includes('/new')) {
       return '新建报销';
     }
+
     if (/\/reimbursements\/\d+/.test(location.pathname)) {
       return '报销详情';
     }
+
     return '我的报销';
   }, [location.pathname]);
 
@@ -64,54 +90,89 @@ export function AppLayout() {
   };
 
   return (
-    <SidebarProvider>
-      <Sidebar collapsible="icon">
-        <SidebarHeader className="border-b border-border/70 px-4 py-3">
-          <div className="text-sm font-semibold">报销系统</div>
-          <div className="text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-            {currentUser ? `${currentUser.username} · ${currentUser.role}` : '正在加载用户'}
+    <SidebarProvider defaultOpen>
+      <Sidebar variant="inset" collapsible="icon">
+        <SidebarHeader className="border-b border-sidebar-border/80 px-3 py-3">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-xl border border-sidebar-border/80 bg-sidebar-accent/60 text-sidebar-foreground shadow-sm">
+              <ReceiptTextIcon className="size-5" />
+            </div>
+            <div className="min-w-0 group-data-[collapsible=icon]:hidden">
+              <div className="truncate text-sm font-semibold text-sidebar-foreground">报销系统</div>
+              <div className="mt-1 truncate text-xs text-sidebar-foreground/70">
+                {currentUser ? `${currentUser.username} · ${currentUser.role}` : '正在加载用户'}
+              </div>
+            </div>
           </div>
         </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
+
+        <SidebarContent className="gap-0">
+          <SidebarGroup className="px-2 py-3">
             <SidebarGroupLabel>工作台</SidebarGroupLabel>
-            <SidebarGroupContent className="grid gap-1 px-2">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const active = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
-                return (
-                  <button
-                    key={item.path}
-                    type="button"
-                    onClick={() => navigate(item.path)}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition ${active ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
-                  >
-                    <Icon className="size-4" />
-                    <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                  </button>
-                );
-              })}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive =
+                    location.pathname === item.path ||
+                    location.pathname.startsWith(`${item.path}/`);
+
+                  return (
+                    <SidebarMenuItem key={item.path}>
+                      <SidebarMenuButton
+                        type="button"
+                        tooltip={item.label}
+                        isActive={isActive}
+                        className="h-10 rounded-xl"
+                        onClick={() => navigate(item.path)}
+                      >
+                        <Icon className="size-4" />
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-        <SidebarFooter className="border-t border-border/70 p-2">
-          <Button type="button" variant="ghost" className="justify-start gap-2" onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}>
-            {resolvedTheme === 'dark' ? <SunMediumIcon className="size-4" /> : <MoonStarIcon className="size-4" />}
+
+        <SidebarFooter className="border-t border-sidebar-border/80 px-3 py-3">
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-10 justify-start gap-2 rounded-xl px-3"
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+          >
+            {resolvedTheme === 'dark' ? (
+              <SunMediumIcon className="size-4" />
+            ) : (
+              <MoonStarIcon className="size-4" />
+            )}
             <span className="group-data-[collapsible=icon]:hidden">切换主题</span>
           </Button>
-          <Button type="button" variant="ghost" className="justify-start gap-2" onClick={handleLogout}>
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-10 justify-start gap-2 rounded-xl px-3"
+            onClick={handleLogout}
+          >
             <LogOutIcon className="size-4" />
             <span className="group-data-[collapsible=icon]:hidden">退出登录</span>
           </Button>
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
-      <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-border/80 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+
+      <SidebarInset className="min-h-svh bg-transparent">
+        <header className="sticky top-0 z-20 flex h-[var(--app-shell-header-height)] items-center gap-3 border-b border-border/70 bg-background/92 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-background/75 md:px-6">
           <SidebarTrigger />
-          <div className="font-semibold">{pageTitle}</div>
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-medium text-foreground">{pageTitle}</div>
+          </div>
         </header>
-        <main>
+
+        <main className="flex-1 px-4 py-4 md:px-6 md:py-6">
           <Outlet />
         </main>
       </SidebarInset>

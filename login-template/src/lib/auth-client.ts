@@ -1,4 +1,6 @@
 import forge from 'node-forge'
+import { WORKSPACE_PRODUCTION_ORIGIN, trimTrailingSlash } from '@super-pro/shared-constants'
+import type { ApiEnvelope } from '@super-pro/shared-types'
 
 export type UserRole = 'admin' | 'guest'
 
@@ -39,13 +41,7 @@ export type RegisterRequest = {
 
 export type RegisterResponse = AuthenticatedUser
 
-type ApiEnvelope<T> = {
-  code: number
-  msg: string
-  data: T
-}
-
-const DEFAULT_DEV_API_BASE_URL = 'http://www.zwpsite.icu:8082'
+const DEFAULT_DEV_API_BASE_URL = WORKSPACE_PRODUCTION_ORIGIN
 
 export class AuthApiError extends Error {
   readonly statusCode?: number
@@ -55,10 +51,6 @@ export class AuthApiError extends Error {
     this.name = 'AuthApiError'
     this.statusCode = statusCode
   }
-}
-
-function trimTrailingSlash(value: string) {
-  return value.replace(/\/+$/, '')
 }
 
 function getApiBaseUrl() {

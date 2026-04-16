@@ -1,13 +1,8 @@
 import type { LoginResponse } from '@/lib/auth-client'
-
-export type StoredAuthSession = {
-  token: string
-  tokenType: 'Bearer'
-  expiresAt: number
-}
+import type { StoredAuthSession } from '@super-pro/shared-types'
 
 export function isExpiredAuthSession(session: StoredAuthSession) {
-  return session.expiresAt <= Date.now()
+  return typeof session.expiresAt === 'number' && session.expiresAt <= Date.now()
 }
 
 const AUTH_STORAGE_KEY = 'login-template.auth'

@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { Command as CommandPrimitive } from 'cmdk'
 import { CheckIcon, SearchIcon } from 'lucide-react'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { InputGroup, InputGroupAddon } from '@/components/ui/input-group'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './dialog'
+import { InputGroup, InputGroupAddon } from './input-group'
 import { cn } from '@/lib/utils'
 
 function Command({
@@ -84,7 +84,7 @@ function CommandList({
     <CommandPrimitive.List
       data-slot="command-list"
       className={cn(
-        'no-scrollbar max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto outline-none',
+        'scrollbar-theme scrollbar-theme-compact max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto outline-none',
         className,
       )}
       {...props}
@@ -181,3 +181,6 @@ export {
   CommandSeparator,
   CommandShortcut,
 }
+
+
+

@@ -12,6 +12,9 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@super-pro/shared-constants": "workspace:*",
+    "@super-pro/shared-types": "workspace:*",
+    "@super-pro/shared-web": "workspace:*",
     "@fontsource-variable/geist": "^5.2.8",
     "mammoth": "^1.11.0",
     "lucide-react": "^1.7.0",
