@@ -1,0 +1,41 @@
+{
+  "articles": [
+    {
+      "id": 1,
+      "component": "ArticleTimeline",
+      "locales": {},
+      "settings": {
+        "order_items_by": "id",
+        "order_items_sort": "desc"
+      },
+      "items": [
+        {
+          "id": 1,
+          "dateStart": {"year": 2018, "month": 9},
+          "dateEnd": {"year": 2022, "month": 6},
+          "img": null,
+          "fallbackFaIcon": "fa-solid fa-graduation-cap",
+          "fallbackFaIconColor": "#2b6cb0",
+          "locales": {
+            "en": {
+              "title": "Bachelor of Computer Science and Technology",
+              "description": "Completed undergraduate studies in computer science with a focus on software fundamentals and practical engineering capability.",
+              "province": "Guangdong",
+              "country": "China",
+              "institution": "Cunjin College of Guangdong Ocean University",
+              "tags": []
+            },
+            "zh": {
+              "title": "计算机科学与技术 本科",
+              "description": "完成计算机科学与技术专业本科学习，具备软件开发基础与工程实践能力。",
+              "province": "广东",
+              "country": "中国",
+              "institution": "广东海洋大学寸金学院",
+              "tags": []
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

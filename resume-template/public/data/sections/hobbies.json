@@ -1,0 +1,298 @@
+{
+    "articles": [
+        {
+            "id": 1,
+            "component": "ArticleSkills",
+            "locales": {
+                "en": {"title": null},
+           
+                "zh": {"title": null}
+            },
+            "settings": {
+                "order_items_by": "id",
+                "order_items_sort": "asc",
+                "max_items_per_line": 2,
+                "transparent_item_icon_background": false,
+                "small_icons": true,
+                "chart": "pie"
+            },
+            "items": [
+                {
+                    "id": 1,
+                    "dateStart": null,
+                    "img": null,
+                    "fallbackFaIcon": "fa-solid fa-users",
+                    "fallbackFaIconColor": "#FF6384",
+                    "percentage": 15,
+                    "locales": {
+                        "en": {
+                            "title": "Family Time",
+                            "description": "Time spent with cherished loved ones.",
+                            "level": null
+                        },
+                     
+                        "zh": {
+                            "title": "家人和朋友",
+                            "description": "我爱我的家人，我爱我的朋友！！！",
+                            "level": null
+                        }
+                    }
+                },
+                {
+                    "id": 2,
+                    "dateStart": null,
+                    "img": null,
+                    "fallbackFaIcon": "fa-solid fa-tasks",
+                    "fallbackFaIconColor": "#36A2EB",
+                    "percentage": 29,
+                    "locales": {
+                        "en": {
+                            "title": "My Projects",
+                            "description": "Pursuing my creative endeavors.",
+                            "level": null
+                        },
+                    
+                        "zh": {
+                            "title": "个人项目",
+                            "description": "追求创意事业，将想法变成现实。",
+                            "level": null
+                        }
+                    }
+                },
+                {
+                    "id": 3,
+                    "dateStart": null,
+                    "img": null,
+                    "fallbackFaIcon": "fa-solid fa-couch",
+                    "fallbackFaIconColor": "#FFCD56",
+                    "percentage": 11,
+                    "locales": {
+                        "en": {
+                            "title": "Relaxing",
+                            "description": "Being lazy and proud of it :)",
+                            "level": null
+                        },
+                       
+                        "zh": {
+                            "title": "放松",
+                            "description": "摆烂并为此自豪 :)",
+                            "level": null
+                        }
+                    }
+                },
+                {
+                    "id": 4,
+                    "dateStart": null,
+                    "img": null,
+                    "fallbackFaIcon": "fa-solid fa-book",
+                    "fallbackFaIconColor": "#C5B0FF",
+                    "percentage": 9,
+                    "locales": {
+                        "en": {
+                            "title": "Studying",
+                            "description": "Embarking on a continuous journey of learning.",
+                            "level": null
+                        },
+                       
+                        "zh": {
+                            "title": "学习",
+                            "description": "难以想象我每天会花一两个钟去阅读，去学习",
+                            "level": null
+                        }
+                    }
+                },
+                {
+                    "id": 5,
+                    "dateStart": null,
+                    "img": null,
+                    "fallbackFaIcon": "fa-solid fa-dumbbell",
+                    "fallbackFaIconColor": "#8EE3C5",
+                    "percentage": 17,
+                    "locales": {
+                        "en": {
+                            "title": "Exercising",
+                            "description": "Dedicating time to physical well-being.",
+                            "level": null
+                        },
+                       
+                        "zh": {
+                            "title": "锻炼",
+                            "description": "我有八块腹肌",
+                            "level": null
+                        }
+                    }
+                },
+                {
+                    "id": 6,
+                    "dateStart": null,
+                    "img": null,
+                    "fallbackFaIcon": "fa-solid fa-utensils",
+                    "fallbackFaIconColor": "#EEB79A",
+                    "percentage": 19,
+                    "locales": {
+                        "en": {
+                            "title": "Cooking",
+                            "description": "Creating culinary masterpieces.",
+                            "level": null
+                        },
+                       
+                        "zh": {
+                            "title": "烹饪",
+                            "description": "我的厨艺经过了所有人的考验",
+                            "level": null
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "component": "ArticleSkills",
+            "locales": {
+                "en": {
+                    "title": "Side pursuits"
+                },
+              
+                "zh": {
+                    "title": "额外兴趣"
+                }
+            },
+            "settings": {
+                "order_items_by": "id",
+                "order_items_sort": "asc",
+                "max_items_per_line": 1,
+                "transparent_item_icon_background": false,
+                "small_icons": true,
+                "chart": null
+            },
+            "items": [
+                {
+                    "id": 1,
+                    "dateStart": null,
+                    "img": null,
+                    "fallbackFaIcon": "fa-solid fa-paint-brush",
+                    "fallbackFaIconColor": null,
+                    "percentage": null,
+                    "locales": {
+                        "en": {
+                            "title": "User Experience Design",
+                            "description": "Proficient in crafting user-centric digital experiences. Adept at making technology intuitive and accessible, enhancing user satisfaction.",
+                            "level": null
+                        },
+                      
+                        "zh": {
+                            "title": "用户体验设计",
+                            "description": "擅长创造以用户为中心的数字体验。精通使技术直观易用，提升用户满意度。",
+                            "level": null
+                        }
+                    }
+                },
+                {
+                    "id": 2,
+                    "dateStart": null,
+                    "img": null,
+                    "fallbackFaIcon": "fa-solid fa-keyboard",
+                    "fallbackFaIconColor": null,
+                    "percentage": null,
+                    "locales": {
+                        "en": {
+                            "title": "Programming",
+                            "description": "Exploring code, algorithms, and building software solutions for real-world challenges.",
+                            "level": null
+                        },
+                      
+                        "zh": {
+                            "title": "编程",
+                            "description": "探索代码、算法，为现实世界的挑战构建软件解决方案。",
+                            "level": null
+                        }
+                    }
+                },
+                {
+                    "id": 3,
+                    "dateStart": null,
+                    "img": null,
+                    "fallbackFaIcon": "fa-solid fa-music",
+                    "fallbackFaIconColor": null,
+                    "percentage": null,
+                    "locales": {
+                        "en": {
+                            "title": "Music",
+                            "description": "Playing instruments, composing, and embracing the harmony of diverse musical genres.",
+                            "level": null
+                        },
+                        
+                        "zh": {
+                            "title": "音乐",
+                            "description": "演奏乐器，作曲，融合多种音乐流派的和谐。",
+                            "level": null
+                        }
+                    }
+                },
+                {
+                    "id": 4,
+                    "dateStart": null,
+                    "img": null,
+                    "fallbackFaIcon": "fa-solid fa-users",
+                    "fallbackFaIconColor": null,
+                    "percentage": null,
+                    "locales": {
+                        "en": {
+                            "title": "User Research",
+                            "description": "Delving into user behavior and insights to shape effective design strategies.",
+                            "level": null
+                        },
+                       
+                        "zh": {
+                            "title": "用户研究",
+                            "description": "深入研究用户行为和见解，塑造有效的设计策略。",
+                            "level": null
+                        }
+                    }
+                },
+                {
+                    "id": 5,
+                    "dateStart": null,
+                    "img": null,
+                    "fallbackFaIcon": "fa-solid fa-desktop",
+                    "fallbackFaIconColor": null,
+                    "percentage": null,
+                    "locales": {
+                        "en": {
+                            "title": "Front-End Development",
+                            "description": "Crafting interactive web interfaces using modern technologies for seamless user experiences.",
+                            "level": null
+                        },
+                       
+                        "zh": {
+                            "title": "前端开发",
+                            "description": "使用现代技术打造交互式网页界面，实现无缝的用户体验。",
+                            "level": null
+                        }
+                    }
+                },
+                {
+                    "id": 6,
+                    "dateStart": null,
+                    "img": null,
+                    "fallbackFaIcon": "fa-solid fa-palette",
+                    "fallbackFaIconColor": null,
+                    "percentage": null,
+                    "locales": {
+                        "en": {
+                            "title": "Visual Arts",
+                            "description": "Exploring visual aesthetics, graphic design, and expressing ideas through artistic creativity.",
+                            "level": null
+                        },
+                       
+                        "zh": {
+                            "title": "视觉艺术",
+                            "description": "探索视觉美学，平面设计，通过艺术创意表达思想。",
+                            "level": null
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

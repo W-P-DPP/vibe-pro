@@ -1,0 +1,110 @@
+{
+  "articles": [
+    {
+      "id": 1,
+      "component": "ArticlePortfolio",
+      "locales": {
+        "en": {
+          "title": null,
+          "category_all": "All",
+          "category_product": "Product",
+          "category_fullstack": "Full Stack",
+          "category_frontend": "Frontend"
+        },
+        "zh": {
+          "title": null,
+          "category_all": "全部",
+          "category_product": "产品",
+          "category_fullstack": "全栈",
+          "category_frontend": "前端"
+        }
+      },
+      "settings": {
+        "order_items_by": "id",
+        "order_items_sort": "asc"
+      },
+      "items": [
+        {
+          "id": 1,
+          "img": null,
+          "fallbackFaIcon": "fa-solid fa-seedling",
+          "fallbackFaIconColor": "#38a169",
+          "category": "product",
+          "locales": {
+            "en": {
+              "title": "FPF Nutrition Product Form Design",
+              "description": "Conducted onsite research in pig farms to identify user pain points and business requirements, then translated findings into PRDs, interactive prototypes, and product solution directions for the nutrition module. Refined information architecture, workflow design, and future AI-agent-oriented capabilities such as smart feed lines, feed demand forecasting, and inventory management.",
+              "tags": ["Product Research", "PRD", "Figma", "Prototype", "AI Agent"]
+            },
+            "zh": {
+              "title": "FPF（未来猪场）营养板块新产品形态设计",
+              "description": "深入一线猪场开展用户调研，收集并分析业务需求与使用痛点，输出调研报告与 PRD。\n基于需求分析结果完成产品方案设计，使用 Figma 输出可交互原型，明确核心流程与功能结构。\n协同相关角色推进需求评审与方案优化，持续打磨产品形态。\n规划 AI Agent 方向能力，包括智能料线、饲料需求预测与库存管理等方案。",
+              "tags": ["用户调研", "PRD", "Figma", "原型设计", "AI Agent"]
+            }
+          },
+          "links": []
+        },
+        {
+          "id": 2,
+          "img": null,
+          "fallbackFaIcon": "fa-solid fa-fire",
+          "fallbackFaIconColor": "#dd6b20",
+          "category": "frontend",
+          "locales": {
+            "en": {
+              "title": "Emergency Safety Management System",
+              "description": "Led frontend architecture design and delivered 20+ technical documents to standardize development workflows. Built browser-side audio/video conversion with FFmpeg + WebAssembly, supported large-scale real-time sensor visualization, resolved COEP/COOP browser restrictions, and improved observability with Sentry integration.",
+              "tags": ["Vue 3", "Node.js", "WebAssembly", "WebRTC", "ECharts", "Sentry"]
+            },
+            "zh": {
+              "title": "安全应急管理系统",
+              "description": "主导前端架构设计，输出 20+ 开发文档，建立标准化开发流程，新人上手效率提升 35%。\n基于 FFmpeg + WebAssembly 实现 Web 端音视频编码转换与格式转换。\n解决 COEP、COOP 浏览器安全限制问题。\n参与着火点算法开发，并通过 ECharts 二次开发实现 10 万级传感器数据实时可视化。",
+              "tags": ["Vue 3", "Node.js", "WebAssembly", "WebRTC", "ECharts", "Sentry"]
+            }
+          },
+          "links": []
+        },
+        {
+          "id": 3,
+          "img": null,
+          "fallbackFaIcon": "fa-solid fa-desktop",
+          "fallbackFaIconColor": "#3182ce",
+          "category": "fullstack",
+          "locales": {
+            "en": {
+              "title": "Operations Tool Platform",
+              "description": "Designed and delivered an enterprise tool platform from 0 to 1 using micro-frontend architecture and Monorepo practices. Improved module reuse by 80%, supported both internal tools and proxied third-party apps, and significantly improved field deployment, testing, and operations efficiency in offline intranet environments.",
+              "tags": ["Vue", "React", "Wujie", "Nest", "MySQL", "TypeScript", "Docker"]
+            },
+            "zh": {
+              "title": "运维工具集合系统（类 Mac 系统窗口）",
+              "description": "从 0 到 1 设计并实现企业级工具平台，采用微前端（Wujie）+ Monorepo，模块复用率提升 80%，支持自研工具与第三方应用接入。\n设计定制化组件库，解决不同应用间路由跳转与可拖动布局问题。\n在内网无网络环境中显著提升测试、运维与现场实施效率，荣获公司最佳支持奖。",
+              "tags": ["Vue", "React", "Wujie", "Nest", "MySQL", "TypeScript", "Docker"]
+            }
+          },
+          "links": []
+        },
+        {
+          "id": 4,
+          "img": null,
+          "fallbackFaIcon": "fa-brands fa-weixin",
+          "fallbackFaIconColor": "#38a169",
+          "category": "fullstack",
+          "locales": {
+            "en": {
+              "title": "Emergency Broadcasting WeChat Backend Service",
+              "description": "Independently developed the backend and push-notification system for an emergency broadcasting public account. Improved concurrency with cluster-based multi-process design and used async queue mechanisms to reduce lost requests and improve service stability.",
+              "tags": ["Node.js", "Express", "WeChat", "Messaging", "Concurrency"]
+            },
+            "zh": {
+              "title": "应急广播公众号后端服务",
+              "description": "独立完成公众号后端开发。\n设计并实现消息推送服务。\n基于 cluster 多进程方案优化服务并发能力，TPS 可达 10000+（32 核服务器压力测试）。\n通过异步队列机制避免 Node.js 端请求丢失，提升服务稳定性。",
+              "tags": ["Node.js", "Express", "微信生态", "消息推送", "并发优化"]
+            }
+          },
+          "links": []
+        }
+      ]
+    }
+  ]
+}

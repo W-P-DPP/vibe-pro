@@ -1,0 +1,69 @@
+{
+  "name": "Zheng Weipeng",
+  "profilePictureUrl": "images/pictures/zwp_avatar.jpg",
+  "locales": {
+    "en": {
+      "name": "Zheng Weipeng",
+      "role": "Product Manager / Full Stack Developer / Frontend Developer"
+    },
+    "zh": {
+      "name": "郑伟鹏",
+      "role": "产品经理 / 全栈开发（Node）/ 前端开发"
+    }
+  },
+  "contactOptions": [
+    {
+      "id": "address",
+      "faIcon": "fa-regular fa-map",
+      "href": null,
+      "locales": {
+        "en": {
+          "valueShort": "Guangzhou, China"
+        },
+        "zh": {
+          "valueShort": "中国广州"
+        }
+      }
+    },
+    {
+      "id": "email",
+      "value": "1519037604@qq.com",
+      "valueShort": "1519037604@qq.com",
+      "faIcon": "fa-regular fa-envelope",
+      "href": "mailto:1519037604@qq.com",
+      "copy": true
+    },
+    {
+      "id": "github",
+      "value": "W-P-DPP",
+      "valueShort": "W-P-DPP",
+      "faIcon": "fa-brands fa-github",
+      "href": "https://github.com/W-P-DPP",
+      "copy": false
+    },
+    {
+      "id": "blog",
+      "value": "zwpsite.icu",
+      "valueShort": "个人博客",
+      "faIcon": "fa-solid fa-globe",
+      "href": "http://www.zwpsite.icu:8082/zwpsite/",
+      "copy": false
+    },
+    {
+      "id": "phone",
+      "value": "19875915067",
+      "valueShort": "19875915067",
+      "faIcon": "fa-solid fa-phone",
+      "href": "tel:19875915067",
+      "copy": true
+    },
+    {
+      "id": "download_resume",
+      "value": "",
+      "valueShort": "",
+      "faIcon": "fa-solid fa-file-pdf",
+      "href": "/pdf/zwp_resume.pdf",
+      "copy": false
+    }
+  ]
+}

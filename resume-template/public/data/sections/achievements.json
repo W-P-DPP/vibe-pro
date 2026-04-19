@@ -1,0 +1,37 @@
+{
+  "articles": [
+    {
+      "id": 1,
+      "component": "ArticleThread",
+      "locales": {
+        "en": {"title": "Certificates"},
+        "zh": {"title": "证书"}
+      },
+      "settings": {
+        "order_items_by": "id",
+        "order_items_sort": "desc"
+      },
+      "items": [
+        {
+          "id": 1,
+          "dateStart": {"year": 2021, "month": 1},
+          "fallbackFaIcon": "fa-solid fa-network-wired",
+          "fallbackFaIconColor": null,
+          "locales": {
+            "en": {
+              "title": "Intermediate Network Engineer",
+              "description": "National qualification certificate in networking and infrastructure-related engineering capability.",
+              "institution": "Certificate No. 31420210544152412917"
+            },
+            "zh": {
+              "title": "中级网络工程师",
+              "description": "具备网络与基础设施相关工程能力的职业资格证书。",
+              "institution": "证书编号：31420210544152412917"
+            }
+          },
+          "links": []
+        }
+      ]
+    }
+  ]
+}

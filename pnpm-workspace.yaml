@@ -7,5 +7,6 @@ packages:
   - file-server
   - agent-server
   - summary-front
+  - resume-template
   - reimburse-front
   - reimburse-server

@@ -1,0 +1,40 @@
+{
+    "categories": [
+        {
+            "id": "home",
+            "faIcon": "fa-regular fa-user",
+            "locales": {
+                "en": {"nav_label": "Home"},
+               
+                "zh": {"nav_label": "主页"}
+            }
+        },
+        {
+            "id": "background",
+            "faIcon": "fa-regular fa-clock",
+            "locales": {
+                "en": {"nav_label": "Background"},
+              
+                "zh": {"nav_label": "背景"}
+            }
+        },
+        {
+            "id": "showcase",
+            "faIcon": "fa-regular fa-folder-open",
+            "locales": {
+                "en": {"nav_label": "Showcase"},
+               
+                "zh": {"nav_label": "展示"}
+            }
+        },
+        {
+            "id": "more",
+            "faIcon": "fa-regular fa-object-ungroup",
+            "locales": {
+                "en": {"nav_label": "More"},
+              
+                "zh": {"nav_label": "查看更多"}
+            }
+        }
+    ]
+}

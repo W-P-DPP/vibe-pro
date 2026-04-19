@@ -1,0 +1,172 @@
+{
+  "sections": [
+    {
+      "id": "about",
+      "categoryId": "home",
+      "jsonPath": "/sections/cover.json",
+      "faIcon": "fa-solid fa-address-card",
+      "type": "centered",
+      "locales": {
+        "en": {
+          "title": "*About* Me",
+          "title_short": "About",
+          "description": null,
+          "nav_label": "About"
+        },
+        "zh": {
+          "title": "*个人*简介",
+          "title_short": "简介",
+          "description": null,
+          "nav_label": "个人简介"
+        }
+      }
+    },
+    {
+      "id": "experience",
+      "categoryId": "background",
+      "jsonPath": "/sections/experience.json",
+      "faIcon": "fa-solid fa-briefcase",
+      "type": "column",
+      "locales": {
+        "en": {
+          "title": "*Work* Experience",
+          "title_short": null,
+          "description": "Roles and responsibilities across product, frontend, and full-stack delivery.",
+          "nav_label": "Experience"
+        },
+        "zh": {
+          "title": "*工作*经历",
+          "title_short": null,
+          "description": "覆盖全栈、前端与产品交付的岗位经历与核心职责。",
+          "nav_label": "工作经历"
+        }
+      }
+    },
+    {
+      "id": "portfolio",
+      "categoryId": "showcase",
+      "jsonPath": "/sections/portfolio.json",
+      "faIcon": "fa-solid fa-folder-open",
+      "type": "column",
+      "locales": {
+        "en": {
+          "title": "Selected *Projects*",
+          "title_short": null,
+          "description": "Representative work spanning product planning, full-stack systems, and frontend delivery.",
+          "nav_label": "Projects"
+        },
+        "zh": {
+          "title": "代表性*项目*",
+          "title_short": null,
+          "description": "覆盖产品规划、全栈系统与前端交付的代表性项目。",
+          "nav_label": "项目经历"
+        }
+      }
+    },
+    {
+      "id": "skills",
+      "categoryId": "showcase",
+      "jsonPath": "/sections/skills.json",
+      "faIcon": "fa-solid fa-tools",
+      "type": "column",
+      "locales": {
+        "en": {
+          "title": "Core *Skills*",
+          "title_short": null,
+          "description": "Product, frontend, backend, and delivery capabilities that support end-to-end execution.",
+          "nav_label": "Skills"
+        },
+        "zh": {
+          "title": "核心*技能*",
+          "title_short": null,
+          "description": "支撑端到端交付的产品、前端、后端与工程能力。",
+          "nav_label": "技能"
+        }
+      }
+    },
+    {
+      "id": "education",
+      "categoryId": "background",
+      "jsonPath": "/sections/education.json",
+      "faIcon": "fa-solid fa-graduation-cap",
+      "type": "column",
+      "locales": {
+        "en": {
+          "title": "*Education*",
+          "title_short": null,
+          "description": "Academic background related to computer science and software engineering.",
+          "nav_label": "Education"
+        },
+        "zh": {
+          "title": "*教育*背景",
+          "title_short": null,
+          "description": "与计算机科学和软件工程相关的教育背景。",
+          "nav_label": "教育背景"
+        }
+      }
+    },
+    {
+      "id": "achievements",
+      "categoryId": "more",
+      "jsonPath": "/sections/achievements.json",
+      "faIcon": "fa-solid fa-award",
+      "type": "row",
+      "locales": {
+        "en": {
+          "title": "*Certificates*",
+          "title_short": null,
+          "description": "Professional certification relevant to engineering capability.",
+          "nav_label": "Certificates"
+        },
+        "zh": {
+          "title": "*证书*",
+          "title_short": null,
+          "description": "与工程能力相关的职业资格证书。",
+          "nav_label": "证书"
+        }
+      }
+    },
+    {
+      "id": "hobbies",
+      "categoryId": "more",
+      "jsonPath": "/sections/hobbies.json",
+      "faIcon": "fa-solid fa-heart",
+      "type": "column",
+      "locales": {
+        "en": {
+          "title": "*Hobbies* & Interests",
+          "title_short": null,
+          "description": "A little more about how I spend time outside of work.",
+          "nav_label": "Hobbies"
+        },
+        "zh": {
+          "title": "*兴趣*爱好",
+          "title_short": null,
+          "description": "补充一些工作之外的兴趣与投入方向。",
+          "nav_label": "兴趣爱好"
+        }
+      }
+    },
+    {
+      "id": "contact",
+      "categoryId": "more",
+      "jsonPath": "/sections/contact.json",
+      "faIcon": "fa-solid fa-pen-to-square",
+      "type": "column",
+      "locales": {
+        "en": {
+          "title": "*Contact*",
+          "title_short": null,
+          "description": "Feel free to reach out for product, frontend, or full-stack opportunities.",
+          "nav_label": "Contact"
+        },
+        "zh": {
+          "title": "*联系*方式",
+          "title_short": null,
+          "description": "欢迎就产品、全栈或前端相关机会与我联系。",
+          "nav_label": "联系方式"
+        }
+      }
+    }
+  ]
+}

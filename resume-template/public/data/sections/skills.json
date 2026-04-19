@@ -1,0 +1,376 @@
+{
+  "articles": [
+    {
+      "id": 1,
+      "component": "ArticleSkills",
+      "locales": {
+        "en": {"title": "Product & Delivery"},
+        "zh": {"title": "产品与交付"}
+      },
+      "settings": {
+        "order_items_by": "id",
+        "order_items_sort": "asc",
+        "max_items_per_line": 2,
+        "transparent_item_icon_background": false,
+        "small_icons": false,
+        "chart": null
+      },
+      "items": [
+        {
+          "id": 1,
+          "dateStart": null,
+          "img": null,
+          "fallbackFaIcon": "fa-solid fa-diagram-project",
+          "fallbackFaIconColor": null,
+          "percentage": null,
+          "locales": {
+            "en": {
+              "title": "Requirement Analysis",
+              "description": "Able to conduct user research, requirement analysis, and solution planning for product delivery.",
+              "level": null
+            },
+            "zh": {
+              "title": "需求分析",
+              "description": "能够完成用户调研、需求分析与产品方案规划，支撑产品落地。",
+              "level": null
+            }
+          }
+        },
+        {
+          "id": 2,
+          "dateStart": null,
+          "img": null,
+          "fallbackFaIcon": "fa-solid fa-sitemap",
+          "fallbackFaIconColor": null,
+          "percentage": null,
+          "locales": {
+            "en": {
+              "title": "Cross-team Delivery",
+              "description": "Experienced in coordinating development, testing, and implementation teams to deliver versions efficiently.",
+              "level": null
+            },
+            "zh": {
+              "title": "跨团队推进",
+              "description": "具备协调研发、测试、实施等角色推进版本交付的能力。",
+              "level": null
+            }
+          }
+        },
+        {
+          "id": 3,
+          "dateStart": null,
+          "img": null,
+          "fallbackFaIcon": "fa-solid fa-pen-ruler",
+          "fallbackFaIconColor": null,
+          "percentage": null,
+          "locales": {
+            "en": {
+              "title": "Prototype Design",
+              "description": "Able to transform business needs into PRDs, process flows, and interactive prototypes.",
+              "level": null
+            },
+            "zh": {
+              "title": "原型与方案设计",
+              "description": "能够将业务需求转化为 PRD、流程图与可交互原型。",
+              "level": null
+            }
+          }
+        },
+        {
+          "id": 4,
+          "dateStart": null,
+          "img": null,
+          "fallbackFaIcon": "fa-solid fa-link",
+          "fallbackFaIconColor": null,
+          "percentage": null,
+          "locales": {
+            "en": {
+              "title": "Delivery Closure",
+              "description": "Familiar with closed-loop delivery from planning to implementation, launch, and iteration.",
+              "level": null
+            },
+            "zh": {
+              "title": "闭环交付",
+              "description": "熟悉从方案设计到开发、上线与迭代的闭环交付流程。",
+              "level": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "component": "ArticleSkills",
+      "locales": {
+        "en": {"title": "Frontend Stack"},
+        "zh": {"title": "前端技术栈"}
+      },
+      "settings": {
+        "order_items_by": "percentage",
+        "order_items_sort": "desc",
+        "max_items_per_line": 2,
+        "transparent_item_icon_background": true,
+        "small_icons": false,
+        "chart": null
+      },
+      "items": [
+        {
+          "id": 1,
+          "dateStart": {"year": 2021, "month": 1},
+          "img": null,
+          "fallbackFaIcon": "fa-brands fa-html5",
+          "fallbackFaIconColor": null,
+          "percentage": 90,
+          "locales": {
+            "en": {
+              "title": "HTML",
+              "description": "Experienced in semantic HTML and responsive page structure implementation."
+            },
+            "zh": {
+              "title": "HTML",
+              "description": "熟练掌握语义化 HTML 与响应式页面结构开发。"
+            }
+          }
+        },
+        {
+          "id": 2,
+          "dateStart": {"year": 2021, "month": 1},
+          "img": null,
+          "fallbackFaIcon": "fa-brands fa-css3-alt",
+          "fallbackFaIconColor": null,
+          "percentage": 88,
+          "locales": {
+            "en": {
+              "title": "CSS",
+              "description": "Skilled in responsive layouts, component styling, and interface polish."
+            },
+            "zh": {
+              "title": "CSS",
+              "description": "熟悉响应式布局、组件样式设计与界面细节优化。"
+            }
+          }
+        },
+        {
+          "id": 3,
+          "dateStart": {"year": 2021, "month": 1},
+          "img": null,
+          "fallbackFaIcon": "fa-brands fa-js",
+          "fallbackFaIconColor": null,
+          "percentage": 88,
+          "locales": {
+            "en": {
+              "title": "JavaScript / TypeScript",
+              "description": "Strong foundation in modern frontend development and interactive business systems."
+            },
+            "zh": {
+              "title": "JavaScript / TypeScript",
+              "description": "具备现代前端开发能力，能够支撑复杂业务系统的交互实现。"
+            }
+          }
+        },
+        {
+          "id": 4,
+          "dateStart": {"year": 2021, "month": 1},
+          "img": null,
+          "fallbackFaIcon": "fa-brands fa-vuejs",
+          "fallbackFaIconColor": null,
+          "percentage": 95,
+          "locales": {
+            "en": {
+              "title": "Vue",
+              "description": "Experienced in large-scale Vue application development and frontend architecture design."
+            },
+            "zh": {
+              "title": "Vue",
+              "description": "熟悉 Vue 技术栈及其原理，具备大型应用开发与前端架构设计经验。"
+            }
+          }
+        },
+        {
+          "id": 5,
+          "dateStart": {"year": 2023, "month": 1},
+          "img": null,
+          "fallbackFaIcon": "fa-brands fa-react",
+          "fallbackFaIconColor": null,
+          "percentage": 75,
+          "locales": {
+            "en": {
+              "title": "React",
+              "description": "Capable of building reusable interfaces and module-based frontend systems."
+            },
+            "zh": {
+              "title": "React",
+              "description": "能够使用 React 构建可复用界面与模块化前端系统。"
+            }
+          }
+        },
+        {
+          "id": 6,
+          "dateStart": {"year": 2023, "month": 1},
+          "img": null,
+          "fallbackFaIcon": "fa-solid fa-chart-line",
+          "fallbackFaIconColor": null,
+          "percentage": 80,
+          "locales": {
+            "en": {
+              "title": "ECharts / UI Libraries",
+              "description": "Hands-on experience with data visualization and enterprise UI delivery."
+            },
+            "zh": {
+              "title": "ECharts / UI 框架",
+              "description": "具备数据可视化与企业级界面落地经验。"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "component": "ArticleSkills",
+      "locales": {
+        "en": {"title": "Backend & Infrastructure"},
+        "zh": {"title": "后端与基础设施"}
+      },
+      "settings": {
+        "order_items_by": "id",
+        "order_items_sort": "asc",
+        "max_items_per_line": 2,
+        "transparent_item_icon_background": true,
+        "small_icons": false,
+        "chart": null
+      },
+      "items": [
+        {
+          "id": 1,
+          "dateStart": {"year": 2023, "month": 1},
+          "img": null,
+          "fallbackFaIcon": "fa-brands fa-node-js",
+          "fallbackFaIconColor": null,
+          "percentage": 82,
+          "locales": {
+            "en": {
+              "title": "Node.js / Express",
+              "description": "Able to build stable backend services and internal business tools."
+            },
+            "zh": {
+              "title": "Node.js / Express",
+              "description": "熟悉 Node.js、Express，能够开发稳定的后端系统与业务工具。"
+            }
+          }
+        },
+        {
+          "id": 2,
+          "dateStart": {"year": 2024, "month": 1},
+          "img": null,
+          "fallbackFaIcon": "fa-solid fa-layer-group",
+          "fallbackFaIconColor": null,
+          "percentage": 78,
+          "locales": {
+            "en": {
+              "title": "Nest",
+              "description": "Capable of building modular backend applications with Nest."
+            },
+            "zh": {
+              "title": "Nest",
+              "description": "熟悉 Nest，具备搭建模块化后端应用的能力。"
+            }
+          }
+        },
+        {
+          "id": 3,
+          "dateStart": {"year": 2023, "month": 1},
+          "img": null,
+          "fallbackFaIcon": "fa-solid fa-database",
+          "fallbackFaIconColor": null,
+          "percentage": 80,
+          "locales": {
+            "en": {
+              "title": "MySQL / Redis",
+              "description": "Familiar with database design, data storage, and caching scenarios."
+            },
+            "zh": {
+              "title": "MySQL / Redis",
+              "description": "熟悉 MySQL、Redis，具备数据库设计与缓存使用能力。"
+            }
+          }
+        },
+        {
+          "id": 4,
+          "dateStart": {"year": 2023, "month": 1},
+          "img": null,
+          "fallbackFaIcon": "fa-solid fa-server",
+          "fallbackFaIconColor": null,
+          "percentage": 75,
+          "locales": {
+            "en": {
+              "title": "Linux / Nginx / Deployment",
+              "description": "Hands-on experience with Linux servers, Nginx configuration, and project deployment."
+            },
+            "zh": {
+              "title": "Linux / Nginx / 部署",
+              "description": "具备 Linux 服务器搭建、Nginx 配置与项目部署经验。"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "component": "ArticleSkills",
+      "locales": {
+        "en": {"title": "Tools & Platforms"},
+        "zh": {"title": "工具与平台"}
+      },
+      "settings": {
+        "order_items_by": "id",
+        "order_items_sort": "asc",
+        "max_items_per_line": 1,
+        "small_icons": true,
+        "transparent_item_icon_background": true,
+        "chart": null
+      },
+      "items": [
+        {
+          "id": 1,
+          "dateStart": null,
+          "img": null,
+          "fallbackFaIcon": "fa-solid fa-wand-magic-sparkles",
+          "fallbackFaIconColor": null,
+          "percentage": null,
+          "locales": {
+            "en": {
+              "title": "AI-assisted Workflow",
+              "description": "Use Claude Code, Codex, and related tools to improve development and product documentation efficiency.",
+              "level": null
+            },
+            "zh": {
+              "title": "AI 辅助工作流",
+              "description": "熟练使用 Claude Code、Codex 等工具辅助开发与产品方案输出。",
+              "level": null
+            }
+          }
+        },
+        {
+          "id": 2,
+          "dateStart": null,
+          "img": null,
+          "fallbackFaIcon": "fa-solid fa-mobile-screen-button",
+          "fallbackFaIconColor": null,
+          "percentage": null,
+          "locales": {
+            "en": {
+              "title": "WeChat / Mini Program / Electron",
+              "description": "Hands-on experience with WeChat ecosystem products, mini programs, apps, and desktop tools.",
+              "level": null
+            },
+            "zh": {
+              "title": "微信生态 / 小程序 / Electron",
+              "description": "具备微信生态、小程序、App 与 Electron 桌面应用开发经验。",
+              "level": null
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

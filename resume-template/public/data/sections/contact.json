@@ -1,0 +1,50 @@
+{
+    "articles": [
+        {
+            "id": 1,
+            "component": "ArticleContactForm",
+            "locales": {
+                "en": {
+                    "contact_thank_you": "*Thanks* for the contact!",
+                    "contact_thank_you_description": "Your message has been received, and I'll be reaching out to you soon. I appreciate your time and look forward to connecting with you!",
+                    "contact_thank_you_reply": "The reply will be sent to your email address *{email}*."
+                },
+             
+                "zh": {
+                    "contact_thank_you": "*感谢*您的联系！",
+                    "contact_thank_you_description": "您的消息已收到，我会尽快与您联系。感谢您的时间，期待与您交流！",
+                    "contact_thank_you_reply": "我们的回复将发送至您的电子邮件地址 *{email}*。"
+                }
+            },
+            "settings": {
+                "order_items_by": "id",
+                "order_items_sort": "asc",
+                "contact_js_public_key": "tzObcsmOwHvPy6Rhp",
+                "contact_js_service_id": "service_4h8g7vb",
+                "contact_js_template_id": "template_react"
+            },
+            "items": null
+        },
+        {
+            "id": 2,
+            "component": "ArticleContactOptions",
+            "locales": {
+                "en": {
+                    "title": "Or...",
+                    "description": "If you prefer, you can reach out to me through the following options:"
+                },
+               
+                "zh": {
+                    "title": "或者...",
+                    "description": "如果您愿意，您可以通过以下方式与我取得联系:"
+                }
+            },
+            "settings": {
+                "order_items_by": "id",
+                "order_items_sort": "asc",
+                "contact_ids": [ "phone", "email", "blog", "github"]
+            },
+            "items": null
+        }
+    ]
+}

@@ -1,0 +1,39 @@
+{
+  "articles": [
+    {
+      "id": 1,
+      "component": "ArticleProfile",
+      "locales": {},
+      "settings": {
+        "order_items_by": "id",
+        "order_items_sort": "asc",
+        "contact_list_ids": ["address", "email", "phone"],
+        "contact_circles_ids": ["blog", "github", "download_resume"]
+      },
+      "items": [
+        {
+          "id": 1,
+          "locales": {
+            "en": {
+              "description": "Since 2021, I have been focused on web development with strengths in frontend engineering and Node.js full-stack delivery. I have participated in and led 10+ project deliveries across frontend, backend, WeChat ecosystem products, mini-programs, and internal enterprise platforms."
+            },
+            "zh": {
+              "description": "2021 年开始从事 Web 相关开发，具备扎实的前端基础与 Node.js 全栈开发能力，参与并主导过 10+ 项目交付，覆盖前后端、微信小程序、公众号与企业内部平台等场景。"
+            }
+          }
+        },
+        {
+          "id": 2,
+          "locales": {
+            "en": {
+              "description": "I currently work as a product manager with hands-on experience in user research, requirement analysis, solution design, prototyping, and cross-functional delivery. My technical background helps me turn business goals into practical product plans and executable systems."
+            },
+            "zh": {
+              "description": "当前从事产品经理岗位，具备需求调研、需求分析、方案设计、原型输出与跨团队推进能力，能够从业务视角推动产品迭代，也能够从技术视角独立完成系统架构与开发落地。"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
