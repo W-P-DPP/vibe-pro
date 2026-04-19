@@ -14,6 +14,8 @@ const LOGIN_TEMPLATE_AUTH_STORAGE_KEY = 'login-template.auth'
 
 const authSessionStore = createAuthSessionStore({
   storageKey: LOGIN_TEMPLATE_AUTH_STORAGE_KEY,
+  enableQueryHandoff: true,
+  enableWindowNameHandoff: true,
 })
 
 export function getAuthToken(): string | null {
@@ -32,10 +34,17 @@ export function buildLoginRedirectUrl(target: string) {
 }
 
 export function redirectToLoginPage(target?: string) {
+  const redirectTarget =
+    target ??
+    (typeof window !== 'undefined' ? window.location.href : '')
+
   return redirectToUrl(
-    buildLoginRedirectUrl(
-      target ?? (typeof window !== 'undefined' ? window.location.href : ''),
-    ),
+    buildSharedLoginRedirectUrl(getLoginUrl(), redirectTarget, {
+      developmentRedirectHandoff:
+        target === undefined && import.meta.env.DEV
+          ? import.meta.env.VITE_DEV_PROJECT_URL
+          : undefined,
+    }),
   )
 }
 

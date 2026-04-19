@@ -35,7 +35,15 @@ export function buildCurrentPageLoginRedirectUrl() {
     return getStrictMenuLoginUrl();
   }
 
-  return buildLoginRedirectUrl(window.location.href);
+  return buildSharedLoginRedirectUrl(
+    getStrictMenuLoginUrl(),
+    window.location.href,
+    {
+      developmentRedirectHandoff: import.meta.env.DEV
+        ? import.meta.env.VITE_DEV_PROJECT_URL
+        : undefined,
+    },
+  );
 }
 
 export function redirectToLoginWithCurrentPage() {

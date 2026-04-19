@@ -9,6 +9,7 @@ import {
   redirectToLoginPage,
   shouldRedirectToLogin,
 } from './lib/auth-session'
+import { renderMarkdownToHtml } from './markdown-preview'
 import type {
   ApiResponse,
   ChunkUploadProgressResponse,
@@ -309,7 +310,12 @@ export default function App() {
       try {
         const response = await requestPreview(selectedNode.relativePath, controller.signal)
         if (kind === 'markdown') {
-          setPreviewState({ status: 'ready', node: selectedNode, kind, markdown: await response.text() })
+          setPreviewState({
+            status: 'ready',
+            node: selectedNode,
+            kind,
+            html: renderMarkdownToHtml(await response.text()),
+          })
           return
         }
         if (kind === 'text') {

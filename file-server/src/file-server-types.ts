@@ -71,7 +71,7 @@ export type PreviewState =
       status: 'ready'
       node: FileNode
       kind: 'markdown'
-      markdown: string
+      html: string
     }
   | {
       status: 'ready'

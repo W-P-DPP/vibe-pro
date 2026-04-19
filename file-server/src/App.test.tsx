@@ -335,6 +335,47 @@ describe('App', () => {
     expect(await screen.findByText('登录状态已失效，请重新登录')).toBeInTheDocument()
   })
 
+  it('should consume login handoff and load the initial tree without redirecting back to login', async () => {
+    window.history.replaceState(
+      {},
+      '',
+      '/file-server?spauth=%7B%22key%22%3A%22super-pro.auth-handoff%22%2C%22session%22%3A%7B%22token%22%3A%22handoff-token%22%2C%22tokenType%22%3A%22Bearer%22%2C%22expiresAt%22%3A4102444800000%7D%7D',
+    )
+
+    const fetchMock = vi.fn()
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse([
+        {
+          name: 'docs',
+          relativePath: '/docs',
+          type: 'folder',
+          children: [],
+        },
+      ]),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderApp()
+
+    expect(await screen.findByRole('button', { name: /docs/ })).toBeInTheDocument()
+    expect(redirectToLoginPageMock).not.toHaveBeenCalled()
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/file/tree',
+      expect.objectContaining({
+        headers: expect.any(Headers),
+      }),
+    )
+    expect(
+      ((fetchMock.mock.calls[0]?.[1] as RequestInit).headers as Headers).get(
+        'Authorization',
+      ),
+    ).toBe('Bearer handoff-token')
+    expect(window.location.search).toBe('')
+    expect(localStorage.getItem('login-template.auth')).toContain(
+      '"token":"handoff-token"',
+    )
+  })
+
   it('should expose full long names through titles in the tree without rendering the header path summary', async () => {
     const longFileName = 'this-is-a-very-long-file-name-used-for-hover-checking-and-layout-validation.md'
     const folderPath = '/nested-folder-with-a-very-long-name'

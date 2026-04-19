@@ -1,4 +1,3 @@
-import ReactMarkdown from 'react-markdown'
 import type { PreviewKind } from './file-preview'
 import { getPreviewKind } from './file-preview'
 import type { PreviewState } from './file-server-types'
@@ -137,9 +136,12 @@ export function PreviewPanel({
         ) : null}
 
         {previewState.status === 'ready' && previewState.kind === 'markdown' ? (
-          <article className="space-y-4 rounded-lg border border-border/70 bg-card/80 p-6 leading-7">
-            <ReactMarkdown>{previewState.markdown}</ReactMarkdown>
-          </article>
+          <div className="flex min-h-full justify-center">
+            <article
+              className="w-full max-w-4xl rounded-lg border border-border/70 bg-card/80 px-6 py-7 leading-7 shadow-2xs sm:px-8 sm:py-8 [&_a]:text-primary [&_a]:underline-offset-4 hover:[&_a]:underline [&_blockquote]:my-6 [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:text-muted-foreground [&_code]:rounded-sm [&_code]:bg-muted/80 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.9em] [&_h1]:mt-8 [&_h1]:scroll-m-20 [&_h1]:text-3xl [&_h1]:font-semibold [&_h1]:tracking-tight [&_h1]:first:mt-0 [&_h2]:mt-8 [&_h2]:scroll-m-20 [&_h2]:border-b [&_h2]:border-border/60 [&_h2]:pb-2 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:tracking-tight [&_h2]:first:mt-0 [&_h3]:mt-6 [&_h3]:scroll-m-20 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:tracking-tight [&_hr]:my-8 [&_hr]:border-border/60 [&_img]:mx-auto [&_img]:rounded-md [&_img]:border [&_img]:border-border/60 [&_img]:shadow-2xs [&_li]:my-1.5 [&_ol]:my-5 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:my-4 [&_p]:text-[15px] [&_pre]:my-5 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:border [&_pre]:border-border/60 [&_pre]:bg-muted/70 [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-[13px] [&_strong]:font-semibold [&_table]:my-6 [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-border/60 [&_tbody_tr]:border-t [&_tbody_tr]:border-border/50 [&_td]:border-r [&_td]:border-border/40 [&_td]:px-3 [&_td]:py-2 [&_td:last-child]:border-r-0 [&_th]:border-r [&_th]:border-border/40 [&_th]:bg-muted/60 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-medium [&_th:last-child]:border-r-0 [&_ul]:my-5 [&_ul]:list-disc [&_ul]:pl-6"
+              dangerouslySetInnerHTML={{ __html: previewState.html }}
+            />
+          </div>
         ) : null}
 
         {previewState.status === 'ready' && previewState.kind === 'text' ? (

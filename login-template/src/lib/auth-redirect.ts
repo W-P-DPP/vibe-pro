@@ -1,3 +1,8 @@
+import {
+  readDevelopmentRedirectHandoff,
+  resolveDevelopmentRedirectTarget,
+} from '@super-pro/shared-web'
+
 const BLOCKED_PROTOCOL_PATTERN = /^(javascript|data|vbscript):/i
 const ABSOLUTE_URL_PATTERN = /^https?:\/\//i
 const HOST_LIKE_URL_PATTERN =
@@ -44,10 +49,26 @@ function normalizeRedirectTarget(input: string) {
   return new URL(trimmedInput, getCurrentOrigin()).toString()
 }
 
-export function getRedirectTargetFromLocation(search?: string) {
+export function getRedirectTargetFromLocation(
+  search?: string,
+  options?: {
+    isDevelopment?: boolean
+  },
+) {
   const resolvedSearch =
     typeof search === 'string' ? search : typeof window !== 'undefined' ? window.location.search : ''
 
-  const redirectTarget = new URLSearchParams(resolvedSearch).get('redirect')?.trim()
-  return redirectTarget ? normalizeRedirectTarget(redirectTarget) : null
+  const searchParams = new URLSearchParams(resolvedSearch)
+  const redirectTarget = searchParams.get('redirect')?.trim()
+  const normalizedRedirectTarget = redirectTarget ? normalizeRedirectTarget(redirectTarget) : null
+
+  if (!normalizedRedirectTarget) {
+    return null
+  }
+
+  return resolveDevelopmentRedirectTarget(
+    normalizedRedirectTarget,
+    readDevelopmentRedirectHandoff(searchParams) ?? undefined,
+    options?.isDevelopment ?? import.meta.env.DEV,
+  )
 }

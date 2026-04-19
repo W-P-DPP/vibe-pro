@@ -1,6 +1,6 @@
 import forge from 'node-forge'
-import { WORKSPACE_PRODUCTION_ORIGIN, trimTrailingSlash } from '@super-pro/shared-constants'
 import type { ApiEnvelope } from '@super-pro/shared-types'
+import { resolveAuthApiBaseUrl } from '@/lib/auth-api-config'
 
 export type UserRole = 'admin' | 'guest'
 
@@ -41,8 +41,6 @@ export type RegisterRequest = {
 
 export type RegisterResponse = AuthenticatedUser
 
-const DEFAULT_DEV_API_BASE_URL = WORKSPACE_PRODUCTION_ORIGIN
-
 export class AuthApiError extends Error {
   readonly statusCode?: number
 
@@ -54,17 +52,7 @@ export class AuthApiError extends Error {
 }
 
 function getApiBaseUrl() {
-  const configured = import.meta.env.VITE_API_BASE_URL?.trim()
-
-  if (configured) {
-    return trimTrailingSlash(configured)
-  }
-
-  if (import.meta.env.DEV) {
-    return DEFAULT_DEV_API_BASE_URL
-  }
-
-  return ''
+  return resolveAuthApiBaseUrl(import.meta.env.VITE_API_BASE_URL, import.meta.env.DEV)
 }
 
 function getEndpoint(path: string) {
