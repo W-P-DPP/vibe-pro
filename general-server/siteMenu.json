@@ -12,7 +12,7 @@
       {
         "id": 2,
         "name": "关于我",
-        "path": "http://127.0.0.1:18697/summary-front/",
+        "path": "http://www.zwpsite.icu:8082/zwpsummary/",
         "icon": "/public/icons/pin.svg",
         "isTop": false,
         "strict": false,
@@ -103,7 +103,7 @@
       {
         "id": 10,
         "name": "日志记录",
-        "path": "http://127.0.0.1:8082/date-logger/",
+        "path": "https://www.zwpsite.icu/date-logger/",
         "icon": "/public/icons/log-color.svg",
         "isTop": false,
         "strict": true,
@@ -114,7 +114,7 @@
       {
         "id": 11,
         "name": "openclaw",
-        "path": "http://127.0.0.1:8082/openclaw/",
+        "path": "http://www.zwpsite.icu:8082/openclaw/",
         "icon": "/public/icons/openclaw.svg",
         "isTop": false,
         "strict": false,
@@ -125,7 +125,7 @@
       {
         "id": 12,
         "name": "file-server",
-        "path": "http://127.0.0.1:16697/file-server/",
+        "path": "http://www.zwpsite.icu:8082/file-server/",
         "icon": "/public/icons/file_server.svg",
         "isTop": false,
         "strict": true,
@@ -136,7 +136,7 @@
       {
         "id": 13,
         "name": "待办",
-        "path": "http://127.0.0.1:8082/todo/",
+        "path": "http://www.zwpsite.icu:8082/todo/",
         "icon": "/public/icons/file_server.svg",
         "isTop": false,
         "strict": true,
@@ -147,7 +147,7 @@
       {
         "id": 14,
         "name": "SelfAgent",
-        "path": "http://127.0.0.1:8082/todo/",
+        "path": "http://www.zwpsite.icu:8082/todo/",
         "icon": "/public/icons/file_server.svg",
         "isTop": false,
         "strict": true,
@@ -158,7 +158,7 @@
       {
         "id": 15,
         "name": "Agent",
-        "path": "http://127.0.0.1:15697/agent/",
+        "path": "http://www.zwpsite.icu:8082/agent/",
         "icon": "/public/icons/agent.svg",
         "isTop": false,
         "strict": true,
@@ -169,12 +169,35 @@
       {
         "id": 16,
         "name": "DHJH报销系统",
-        "path": "http://127.0.0.1:17697/reimburse/",
+        "path": "http://www.zwpsite.icu:8082/reimburse/",
         "icon": "/public/icons/agent.svg",
         "isTop": false,
         "strict": true,
         "hide": true,
         "remark": "私单，开发中...",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "name": "运维",
+    "path": "",
+    "icon": "/public/icons/yw.svg",
+    "isTop": true,
+    "strict": false,
+    "hide": false,
+    "remark": "",
+    "children": [
+      {
+        "id": 18,
+        "name": "Jenkins",
+        "path": "http://www.zwpsite.icu:8082/jenkins/",
+        "icon": "/public/icons/jenkins.svg",
+        "isTop": false,
+        "strict": false,
+        "hide": false,
+        "remark": "Jenkins CICD自动化搭建",
         "children": []
       }
     ]
