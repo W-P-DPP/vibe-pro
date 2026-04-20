@@ -192,9 +192,12 @@ function runCommand(command, args, options = {}) {
   const isCmdWrapper = process.platform === 'win32' && /\.(cmd|bat)$/i.test(command)
   const result = isCmdWrapper
     ? spawnSync(
-        process.env.ComSpec || 'cmd.exe',
-        ['/d', '/s', '/c', `""${command}" ${args.map(quoteCmdArg).join(' ')}"`],
-        baseOptions,
+        `"${command}" ${args.map(quoteCmdArg).join(' ')}`,
+        [],
+        {
+          ...baseOptions,
+          shell: process.env.ComSpec || true,
+        },
       )
     : spawnSync(command, args, baseOptions)
 
@@ -259,15 +262,9 @@ function buildServers(repoDir, pnpmCmd, servers) {
 
 function reloadPm2(repoDir, pm2Cmd, apps) {
   console.log('[STEP 5/6] Reload backend services with PM2')
-  const ecosystemPath = path.join(os.tmpdir(), `super-pro-ecosystem-${Date.now()}.cjs`)
-  fs.writeFileSync(ecosystemPath, `module.exports = ${JSON.stringify({ apps }, null, 2)};\n`, 'utf8')
-
-  try {
-    runCommand(pm2Cmd, ['startOrReload', ecosystemPath, '--update-env'], { cwd: repoDir })
-    runCommand(pm2Cmd, ['save'], { cwd: repoDir })
-  } finally {
-    fs.rmSync(ecosystemPath, { force: true })
-  }
+  const ecosystemPath = path.join(repoDir, 'ecosystem.config.cjs')
+  runCommand(pm2Cmd, ['startOrReload', ecosystemPath, '--update-env'], { cwd: repoDir })
+  runCommand(pm2Cmd, ['save'], { cwd: repoDir })
 
   console.log('[OK] PM2 services reloaded.')
   console.log()
