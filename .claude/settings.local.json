@@ -9,7 +9,15 @@
       "Bash('/c/Users/admin/AppData/Local/Programs/Python/Python312/python.exe' --version)",
       "Bash('/c/Users/admin/AppData/Local/Programs/Python/Python312/Scripts/pip.exe' --version)",
       "Bash(pip install:*)",
-      "Bash(graphify install:*)"
+      "Bash(graphify install:*)",
+      "Bash(npx skills:*)",
+      "Bash(git -C \"C:/Users/admin/Desktop/my/super-pro\" status --short)",
+      "Bash(pnpm test:shared)",
+      "Bash(pnpm --filter @super-pro/agent-server test)",
+      "Bash(pnpm --filter @super-pro/reimburse-server test)",
+      "Bash(pnpm --filter @super-pro/server test)",
+      "Bash(pnpm --filter @super-pro/shared-server test)",
+      "Bash(pnpm:*)"
     ]
   }
 }

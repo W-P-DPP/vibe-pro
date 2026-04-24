@@ -1,7 +1,14 @@
 import type { Request, Response, NextFunction } from 'express';
+import { sanitizeLogValue } from '@super-pro/shared-server';
 import config from '../../src/config.ts';
-import { getDataSource } from '../mysql.ts';
-import { OperationLogEntity } from '../../src/operationLog/operationLog.entity.ts';
+import {
+  OperationLogService,
+} from '../../src/operationLog/operationLog.service.ts';
+import type {
+  CreateOperationLogDto,
+  OperationLogRuntimeConfig,
+} from '../../src/operationLog/operationLog.dto.ts';
+import { OperationLogRepository } from '../../src/operationLog/operationLog.repository.ts';
 import { Logger } from '../index.ts';
 
 const METHOD_TYPE_MAP: Record<string, string> = {
@@ -11,16 +18,6 @@ const METHOD_TYPE_MAP: Record<string, string> = {
   PATCH: '修改',
   DELETE: '删除',
 };
-
-const SENSITIVE_FIELD_NAMES = new Set([
-  'password',
-  'passwordCiphertext',
-  'passwordHash',
-  'token',
-  'accessToken',
-  'refreshToken',
-  'authorization',
-]);
 
 function getClientIp(req: Request): string {
   const forwarded = req.headers['x-forwarded-for'];
@@ -36,71 +33,76 @@ function getModule(path: string): string {
   return segments[segments.length - 1] || 'unknown';
 }
 
-function sanitizeLogValue(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map(sanitizeLogValue);
-  }
-
-  if (!value || typeof value !== 'object') {
-    return value;
-  }
-
-  const sanitized: Record<string, unknown> = {};
-  for (const [key, currentValue] of Object.entries(value)) {
-    sanitized[key] = SENSITIVE_FIELD_NAMES.has(key) ? '[REDACTED]' : sanitizeLogValue(currentValue);
-  }
-
-  return sanitized;
+function parsePositiveInteger(value: unknown, fallback: number) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-export function operationLogMiddleware(req: Request, res: Response, next: NextFunction) {
-  const cfg = config.operationLog;
-  if (!cfg?.enabled) {
-    return next();
-  }
+function resolveOperationLogConfig(): OperationLogRuntimeConfig {
+  const runtimeConfig = (config.operationLog ?? {}) as Record<string, unknown>;
 
-  const whitelist: string[] = cfg.whitelist || [];
-  const reqPath = req.path;
+  return {
+    enabled: runtimeConfig.enabled === true,
+    whitelist: Array.isArray(runtimeConfig.whitelist)
+      ? runtimeConfig.whitelist.filter((value): value is string => typeof value === 'string')
+      : [],
+    batchSize: parsePositiveInteger(runtimeConfig.batchSize, 20),
+    flushIntervalMs: parsePositiveInteger(runtimeConfig.flushIntervalMs, 500),
+    maxRequestParamsLength: parsePositiveInteger(runtimeConfig.maxRequestParamsLength, 2048),
+  };
+}
 
-  if (whitelist.some((w: string) => reqPath === w || reqPath.startsWith(w))) {
-    return next();
-  }
-
-  const startTime = Date.now();
-
-  res.on('finish', () => {
-    const costTime = Date.now() - startTime;
-    const user = req.jwtPayload?.username || req.jwtPayload?.name || req.jwtPayload?.sub || 'anonymous';
-    const fullPath = req.originalUrl;
-
-    const params = Object.keys(req.body || {}).length > 0
-      ? JSON.stringify(sanitizeLogValue(req.body))
-      : Object.keys(req.query || {}).length > 0
-        ? JSON.stringify(sanitizeLogValue(req.query))
-        : undefined;
-
-    const logEntry = {
-      user,
-      module: getModule(req.path),
-      operationType: METHOD_TYPE_MAP[req.method.toUpperCase()] || req.method,
-      requestUrl: fullPath,
-      requestMethod: req.method.toUpperCase(),
-      requestParams: params,
-      ip: getClientIp(req),
-      status: res.statusCode < 400 ? 'success' : 'fail',
-      responseCode: res.statusCode,
-      costTime,
-    };
-
-    const ds = getDataSource();
-    if (!ds || !ds.isInitialized) return;
-
-    ds.getRepository(OperationLogEntity)
-      .save(logEntry)
-      .catch((err) => {
-        Logger.getInstance().error('Failed to save operation log:', err);
-      });
+export function createOperationLogMiddleware(options?: {
+  config?: OperationLogRuntimeConfig;
+  service?: Pick<OperationLogService, 'record'>;
+}) {
+  const runtimeConfig = options?.config ?? resolveOperationLogConfig();
+  const operationLogService = options?.service ?? new OperationLogService({
+    repository: new OperationLogRepository(),
+    logger: Logger.getInstance(),
+    batchSize: runtimeConfig.batchSize,
+    flushIntervalMs: runtimeConfig.flushIntervalMs,
+    maxRequestParamsLength: runtimeConfig.maxRequestParamsLength,
   });
 
-  next();
+  return function operationLogMiddleware(req: Request, res: Response, next: NextFunction) {
+    if (!runtimeConfig.enabled) {
+      return next();
+    }
+
+    const reqPath = req.path;
+
+    if (runtimeConfig.whitelist.some((prefix) => reqPath === prefix || reqPath.startsWith(prefix))) {
+      return next();
+    }
+
+    const startTime = Date.now();
+
+    res.on('finish', () => {
+      const requestParams = Object.keys(req.body || {}).length > 0
+        ? JSON.stringify(sanitizeLogValue(req.body))
+        : Object.keys(req.query || {}).length > 0
+          ? JSON.stringify(sanitizeLogValue(req.query))
+          : undefined;
+
+      const logEntry: CreateOperationLogDto = {
+        user: String(req.jwtPayload?.username || req.jwtPayload?.name || req.jwtPayload?.sub || 'anonymous'),
+        module: getModule(req.path),
+        operationType: METHOD_TYPE_MAP[req.method.toUpperCase()] || req.method,
+        requestUrl: req.originalUrl,
+        requestMethod: req.method.toUpperCase(),
+        requestParams,
+        ip: getClientIp(req),
+        status: res.statusCode < 400 ? 'success' : 'fail',
+        responseCode: res.statusCode,
+        costTime: Date.now() - startTime,
+      };
+
+      operationLogService.record(logEntry);
+    });
+
+    next();
+  };
 }
+
+export const operationLogMiddleware = createOperationLogMiddleware();

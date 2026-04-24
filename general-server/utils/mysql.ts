@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { getDatabaseConfig } from '@super-pro/shared-server';
 import { DataSource } from 'typeorm';
 import config from '../src/config.ts';
 import { OperationLogEntity } from '../src/operationLog/operationLog.entity.ts';
@@ -24,18 +25,22 @@ export default async function initDataBase() {
 
     const logger = Logger.getInstance();
     logger.info('Initializing MySQL Database Connection...');
+    const databaseConfig = getDatabaseConfig(config.Database, {
+        nodeEnv: process.env.NODE_ENV,
+    });
+
     dataSource = new DataSource({
-        type: config.Database.type || 'mysql',
-        host:  config.Database.host || '127.0.0.1',
-        port:  config.Database.port || 3306,
-        username:  config.Database.user || 'root',
-        password:  config.Database.password || 'password',
-        database:  config.Database.database || 'wxbot',
+        type: databaseConfig.type,
+        host: databaseConfig.host,
+        port: databaseConfig.port,
+        username: databaseConfig.username,
+        password: databaseConfig.password,
+        database: databaseConfig.database,
         connectorPackage: 'mysql2',
-        synchronize: true, // 生产环境一定 false
+        synchronize: databaseConfig.synchronize,
         logging: ['error'],
-        timezone: config.Database.timezone || '+08:00',
-        charset:config.Database.charset || 'utf8mb4',
+        timezone: databaseConfig.timezone,
+        charset: databaseConfig.charset,
 
         entities: [OperationLogEntity, SiteMenuEntitySchema, UserEntitySchema],
         migrations: ['src/**/*.migration.ts']

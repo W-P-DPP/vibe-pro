@@ -1,28 +1,15 @@
-// src/logger/ErrorLogger.ts
-import type { Request, Response, NextFunction } from 'express';
+import { createErrorMiddleware } from '@super-pro/shared-server';
 import { Logger } from './Logger.ts';
 
 export class ErrorLogger {
   private static logger = Logger.getInstance();
 
   public static middleware() {
-    return (
-      err: Error,
-      req: Request,
-      res: Response,
-      next: NextFunction
-    ) => {
-      ErrorLogger.logger.error({
-        message: err.message,
-        stack: err.stack,
-        method: req.method,
-        url: req.originalUrl,
-        ip: req.ip
-      });
-
-      res.status(500).json({
-        message: 'Internal Server Error'
-      });
-    };
+    return createErrorMiddleware({
+      logger: {
+        error: (message, meta) => ErrorLogger.logger.error(message, meta),
+      },
+      fallbackMessage: '服务器内部错误',
+    });
   }
 }

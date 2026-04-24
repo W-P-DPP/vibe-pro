@@ -27,15 +27,10 @@ import { screenService } from '../../src/screen/screen.service.ts';
 
 describe('screenService', () => {
   beforeEach(() => {
-    jest.useFakeTimers().setSystemTime(new Date('2026-04-17T08:00:00.000Z'));
     queryMock.mockReset();
     getSnapshotMock.mockReset();
     getDataSourceMock.mockClear();
     initDataBaseMock.mockClear();
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   it('aggregates overview metrics with deltas', async () => {
@@ -78,6 +73,8 @@ describe('screenService', () => {
         }),
       ]),
     );
+    expect(getDataSourceMock).toHaveBeenCalled();
+    expect(initDataBaseMock).not.toHaveBeenCalled();
   });
 
   it('fills missing trend buckets for dashboard ranges', async () => {

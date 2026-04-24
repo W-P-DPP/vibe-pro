@@ -1,7 +1,7 @@
 interface:
   display_name: "Frontend Design Guard"
-  short_description: "Read design.md first, prefer the bundled shadcn theme, and default to restrained UI"
-  default_prompt: "Use $frontend-design-guard to handle frontend work in this repository only after reading frontend-template/design.md first, then loading the bundled shadcn theme reference, preferring that theme, and defaulting to restrained minimal UI unless the user explicitly asks for stronger visual treatment."
+  short_description: "Read design.md first, use the shadcn theme, preserve API/auth contracts, and keep UI restrained."
+  default_prompt: "Use $frontend-design-guard for frontend work in this repository. Read frontend-template/design.md first, then the bundled shadcn theme reference. Keep UI restrained unless asked otherwise, default copy to Simplified Chinese, centralize API calls in src/api/modules, preserve backend response envelopes, reuse shared-web/shared-types where available, and handle auth redirects for 401/403."
 
 policy:
   allow_implicit_invocation: true

@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { getDatabaseConfig } from '@super-pro/shared-server';
 import { DataSource } from 'typeorm';
 import config from '../src/config.ts';
 import {
@@ -35,19 +36,22 @@ export default async function initDataBase() {
 
   const logger = Logger.getInstance();
   logger.info('Initializing MySQL Database Connection...');
+  const databaseConfig = getDatabaseConfig(config.Database, {
+    nodeEnv: process.env.NODE_ENV,
+  });
 
   dataSource = new DataSource({
-    type: process.env.DB_TYPE || config.Database.type || 'mysql',
-    host: process.env.DB_HOST || config.Database.host || '127.0.0.1',
-    port: Number(process.env.DB_PORT || config.Database.port || 3306),
-    username: process.env.DB_USER || config.Database.user || 'root',
-    password: process.env.DB_PASSWORD || config.Database.password || 'password',
-    database: process.env.DB_NAME || config.Database.database || 'wxbot',
+    type: databaseConfig.type,
+    host: databaseConfig.host,
+    port: databaseConfig.port,
+    username: databaseConfig.username,
+    password: databaseConfig.password,
+    database: databaseConfig.database,
     connectorPackage: 'mysql2',
-    synchronize: true,
+    synchronize: databaseConfig.synchronize,
     logging: ['error'],
-    timezone: process.env.DB_TIMEZONE || config.Database.timezone || '+08:00',
-    charset: process.env.DB_CHARSET || config.Database.charset || 'utf8mb4',
+    timezone: databaseConfig.timezone,
+    charset: databaseConfig.charset,
     entities: [
       AgentProfileEntitySchema,
       AgentKnowledgeBindingEntitySchema,
