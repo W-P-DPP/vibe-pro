@@ -306,8 +306,24 @@ function syncFrontends(deployRoot, frontends) {
   console.log()
 }
 
+function syncSharedPublicAssets(repoDir, deployRoot) {
+  const publicSourceDir = path.join(repoDir, 'general-server', 'public')
+  if (!fs.existsSync(publicSourceDir)) {
+    console.log('[STEP 4/7] Sync shared public assets')
+    console.log('  [SKIP ] general-server/public not found')
+    console.log()
+    return
+  }
+
+  console.log('[STEP 4/7] Sync shared public assets')
+  const publicTargetDir = path.join(deployRoot, 'public')
+  console.log('  [SYNC ] general-server\\public -> public')
+  syncDirectory(publicSourceDir, publicTargetDir)
+  console.log()
+}
+
 function buildServers(repoDir, pnpmCmd, servers) {
-  console.log('[STEP 4/6] Build backend services')
+  console.log('[STEP 5/7] Build backend services')
   for (const pkg of servers) {
     console.log(`  [BUILD] ${pkg.packageJson.name}`)
     runCommand(pnpmCmd, ['--dir', repoDir, '--filter', pkg.packageJson.name, 'build'])
@@ -316,7 +332,7 @@ function buildServers(repoDir, pnpmCmd, servers) {
 }
 
 function reloadPm2(repoDir, pm2Cmd, apps) {
-  console.log('[STEP 5/6] Reload backend services with PM2')
+  console.log('[STEP 6/7] Reload backend services with PM2')
   const ecosystemPath = path.join(repoDir, 'ecosystem.config.cjs')
   runCommand(pm2Cmd, ['startOrReload', ecosystemPath, '--update-env'], { cwd: repoDir })
   runCommand(pm2Cmd, ['save'], { cwd: repoDir })
@@ -371,7 +387,7 @@ function waitForNginxReady(nginxExe, nginxDir, nginxConf, timeoutMs = 5000) {
 }
 
 function restartNginx(nginxExe, nginxDir, nginxConf) {
-  console.log('[STEP 6/6] Restart nginx')
+  console.log('[STEP 7/7] Restart nginx')
   runCommand(nginxExe, ['-t', '-p', nginxDir, '-c', nginxConf])
   const reloadResult = getCommandStatus(
     nginxExe,
@@ -432,6 +448,7 @@ function runAllMode(repoDir, deployRoot, pnpmCmd, pm2Cmd, nginxExe, nginxDir, ng
   installDependencies(repoDir, pnpmCmd)
   buildFrontends(repoDir, pnpmCmd, plan.frontends)
   syncFrontends(deployRoot, plan.frontends)
+  syncSharedPublicAssets(repoDir, deployRoot)
   buildServers(repoDir, pnpmCmd, plan.servers)
   reloadPm2(repoDir, pm2Cmd, buildPm2Apps(repoDir))
   restartNginx(nginxExe, nginxDir, nginxConf)

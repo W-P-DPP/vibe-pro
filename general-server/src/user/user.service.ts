@@ -80,6 +80,10 @@ function normalizePem(value?: string): string | null {
   return normalized ? normalized : null;
 }
 
+function isPlaceholderPem(value: string | null): boolean {
+  return Boolean(value && /replace_with_/i.test(value));
+}
+
 function buildLoginKeyConfigError(): UserBusinessError {
   return new UserBusinessError(
     '登录加密密钥配置无效',
@@ -92,6 +96,30 @@ function buildLoginKeyConfigError(): UserBusinessError {
   );
 }
 
+function buildValidLoginEncryptionKeyPair(
+  publicKey: string | null,
+  privateKey: string | null,
+): LoginEncryptionKeyPair | null {
+  if (!publicKey || !privateKey) {
+    return null;
+  }
+
+  if (isPlaceholderPem(publicKey) || isPlaceholderPem(privateKey)) {
+    return null;
+  }
+
+  try {
+    createPublicKey(publicKey);
+    createPrivateKey(privateKey);
+    return {
+      publicKey,
+      privateKey,
+    };
+  } catch {
+    return null;
+  }
+}
+
 function getLoginEncryptionKeyPair(): LoginEncryptionKeyPair {
   if (cachedLoginEncryptionKeyPair) {
     return cachedLoginEncryptionKeyPair;
@@ -99,28 +127,14 @@ function getLoginEncryptionKeyPair(): LoginEncryptionKeyPair {
 
   const publicKey = normalizePem(process.env.LOGIN_PASSWORD_PUBLIC_KEY);
   const privateKey = normalizePem(process.env.LOGIN_PASSWORD_PRIVATE_KEY);
+  const configuredKeyPair = buildValidLoginEncryptionKeyPair(publicKey, privateKey);
 
-  if (publicKey || privateKey) {
-    if (!publicKey || !privateKey) {
-      throw buildLoginKeyConfigError();
-    }
-
-    try {
-      createPublicKey(publicKey);
-      createPrivateKey(privateKey);
-    } catch {
-      throw buildLoginKeyConfigError();
-    }
-
-    cachedLoginEncryptionKeyPair = {
-      publicKey,
-      privateKey,
-    };
-
+  if (configuredKeyPair) {
+    cachedLoginEncryptionKeyPair = configuredKeyPair;
     return cachedLoginEncryptionKeyPair;
   }
 
-  if (process.env.NODE_ENV === 'production') {
+  if ((publicKey || privateKey) && process.env.NODE_ENV !== 'production') {
     throw buildLoginKeyConfigError();
   }
 
@@ -130,6 +144,10 @@ function getLoginEncryptionKeyPair(): LoginEncryptionKeyPair {
 
 export function getLoginPublicKeyPem(): string {
   return getLoginEncryptionKeyPair().publicKey;
+}
+
+export function clearCachedLoginEncryptionKeyPair(): void {
+  cachedLoginEncryptionKeyPair = null;
 }
 
 function decryptLoginPassword(passwordCiphertext: string): string {

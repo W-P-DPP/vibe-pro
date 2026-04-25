@@ -7,6 +7,7 @@ import type {
 import { UserRoleEnum } from '../../src/user/user.dto.ts';
 import { UserEntity } from '../../src/user/user.entity.ts';
 import {
+  clearCachedLoginEncryptionKeyPair,
   hashPassword,
   UserBusinessError,
   UserService,
@@ -99,6 +100,13 @@ describe('UserService', () => {
       passwordHash: hashPassword(DISABLED_USER_PASSWORD),
     }),
   ];
+
+  afterEach(() => {
+    delete process.env.LOGIN_PASSWORD_PUBLIC_KEY;
+    delete process.env.LOGIN_PASSWORD_PRIVATE_KEY;
+    delete process.env.NODE_ENV;
+    clearCachedLoginEncryptionKeyPair();
+  });
 
   it('新增用户成功时应返回角色字段', async () => {
     const service = new UserService(createRepositoryMock(records));
@@ -262,5 +270,27 @@ describe('UserService', () => {
     ).rejects.toMatchObject<Partial<UserBusinessError>>({
       message: '用户已停用，无法登录',
     });
+  });
+  it('falls back to an ephemeral key pair when production keys are placeholders', async () => {
+    process.env.NODE_ENV = 'production';
+    process.env.LOGIN_PASSWORD_PUBLIC_KEY = '-----BEGIN PUBLIC KEY-----\\nreplace_with_public_key\\n-----END PUBLIC KEY-----';
+    process.env.LOGIN_PASSWORD_PRIVATE_KEY = '-----BEGIN PRIVATE KEY-----\\nreplace_with_private_key\\n-----END PRIVATE KEY-----';
+    clearCachedLoginEncryptionKeyPair();
+
+    const service = new UserService(createRepositoryMock(records));
+    const publicKey = service.getLoginPublicKey().publicKey;
+    const result = await service.loginUser({
+      username: 'zhangsan',
+      passwordCiphertext: encryptPassword(publicKey, TEST_PASSWORD),
+    });
+
+    expect(publicKey).toContain('BEGIN PUBLIC KEY');
+    expect(result).toEqual(
+      expect.objectContaining({
+        token: expect.any(String),
+        tokenType: 'Bearer',
+        expiresIn: 7200,
+      }),
+    );
   });
 });
