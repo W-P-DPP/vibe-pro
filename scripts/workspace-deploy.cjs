@@ -173,6 +173,55 @@ function buildPm2Apps(repoDir) {
   }))
 }
 
+function parseEnvFile(envFilePath) {
+  if (!fs.existsSync(envFilePath)) {
+    return {}
+  }
+
+  const result = {}
+  const lines = fs.readFileSync(envFilePath, 'utf8').split(/\r?\n/)
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+
+    const separatorIndex = trimmed.indexOf('=')
+    if (separatorIndex <= 0) continue
+
+    const key = trimmed.slice(0, separatorIndex).trim()
+    let value = trimmed.slice(separatorIndex + 1).trim()
+    if (
+      (value.startsWith('"') && value.endsWith('"'))
+      || (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1)
+    }
+
+    result[key] = value
+  }
+
+  return result
+}
+
+function getCleanupMetadata(repoDir) {
+  const apps = buildPm2Apps(repoDir)
+  const uniquePorts = new Set()
+
+  for (const app of apps) {
+    const appDir = path.resolve(repoDir, app.cwd.replace(/^[.][/\\]/, ''))
+    const envFilePath = path.join(appDir, '.env.production')
+    const envValues = parseEnvFile(envFilePath)
+    const port = Number(envValues.PORT)
+    if (Number.isFinite(port) && port > 0) {
+      uniquePorts.add(String(port))
+    }
+  }
+
+  return {
+    pm2Apps: apps.map((app) => app.name),
+    backendPorts: [...uniquePorts].sort((left, right) => Number(left) - Number(right)),
+  }
+}
+
 function ensureDirectory(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true })
 }
@@ -355,6 +404,13 @@ function main() {
       })),
       servers: buildPm2Apps(repoDir),
     }, null, 2))
+    return
+  }
+
+  if (command === 'cleanup-vars') {
+    const cleanupMetadata = getCleanupMetadata(repoDir)
+    console.log(`BACKEND_PORTS=${cleanupMetadata.backendPorts.join(' ')}`)
+    console.log(`PM2_APPS=${cleanupMetadata.pm2Apps.join(' ')}`)
     return
   }
 
