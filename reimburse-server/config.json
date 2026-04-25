@@ -1,0 +1,24 @@
+{
+    "expires_in":7200,
+    "axios":{
+        "baseURL":"https://api.weixin.qq.com/cgi-bin/",
+        "timeout":5000
+    },
+    "Redis":{
+        "host":"127.0.0.1",
+        "port":6379
+    },
+    "Database":{
+        "host":"127.0.0.1",
+        "user":"root",
+        "password":"123456",
+        "database":"wxbot",
+        "port":3306,
+        "connectionLimit":10,
+        "waitForConnections":true,
+        "queueLimit":0,
+        "timezone": "+08:00",
+        "charset": "utf8mb4"
+
+    }
+}
