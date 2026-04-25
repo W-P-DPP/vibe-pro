@@ -330,20 +330,56 @@ function startDetachedProcess(command, args, options = {}) {
     cwd: options.cwd,
     detached: true,
     stdio: 'ignore',
+    windowsHide: true,
   })
   child.unref()
   return child.pid
 }
 
+function getCommandStatus(command, args, options = {}) {
+  const result = spawnSync(command, args, {
+    cwd: options.cwd,
+    stdio: 'ignore',
+    windowsHide: true,
+  })
+
+  if (result.error) {
+    throw result.error
+  }
+
+  return result.status ?? 1
+}
+
+function waitForNginxReady(nginxExe, nginxDir, nginxConf, timeoutMs = 5000) {
+  const startedAt = Date.now()
+
+  while (Date.now() - startedAt < timeoutMs) {
+    const reloadStatus = getCommandStatus(
+      nginxExe,
+      ['-p', nginxDir, '-c', nginxConf, '-s', 'reload'],
+      { cwd: nginxDir },
+    )
+
+    if (reloadStatus === 0) {
+      return true
+    }
+
+    sleep(500)
+  }
+
+  return false
+}
+
 function restartNginx(nginxExe, nginxDir, nginxConf) {
   console.log('[STEP 6/6] Restart nginx')
   runCommand(nginxExe, ['-t', '-p', nginxDir, '-c', nginxConf])
-  const reloadResult = spawnSync(nginxExe, ['-p', nginxDir, '-c', nginxConf, '-s', 'reload'], {
-    cwd: nginxDir,
-    stdio: 'ignore',
-  })
+  const reloadResult = getCommandStatus(
+    nginxExe,
+    ['-p', nginxDir, '-c', nginxConf, '-s', 'reload'],
+    { cwd: nginxDir },
+  )
 
-  if (reloadResult.status === 0) {
+  if (reloadResult === 0) {
     console.log('[OK] nginx reloaded successfully.')
     console.log()
     return
@@ -352,7 +388,11 @@ function restartNginx(nginxExe, nginxDir, nginxConf) {
   const pid = startDetachedProcess(nginxExe, ['-p', nginxDir, '-c', nginxConf], {
     cwd: nginxDir,
   })
-  console.log(`[OK] nginx start command issued successfully. pid=${pid ?? 'unknown'}`)
+  if (!waitForNginxReady(nginxExe, nginxDir, nginxConf)) {
+    throw new Error(`nginx start command was issued but nginx did not become ready. pid=${pid ?? 'unknown'}`)
+  }
+
+  console.log(`[OK] nginx started successfully. pid=${pid ?? 'unknown'}`)
   console.log()
 }
 
