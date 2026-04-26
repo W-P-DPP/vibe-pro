@@ -1,4 +1,5 @@
 const fs = require('node:fs')
+const http = require('node:http')
 const os = require('node:os')
 const path = require('node:path')
 const { spawn, spawnSync } = require('node:child_process')
@@ -231,6 +232,12 @@ function ensureDirectory(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true })
 }
 
+function sleepAsync(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
 function quoteCmdArg(value) {
   if (value === '') return '""'
   if (!/[\s"&^<>|()]/.test(value)) return value
@@ -274,19 +281,45 @@ function syncDirectory(sourceDir, targetDir) {
     throw new Error(`Source directory not found: ${sourceDir}`)
   }
 
-  fs.rmSync(targetDir, { recursive: true, force: true })
-  ensureDirectory(path.dirname(targetDir))
-  fs.cpSync(sourceDir, targetDir, { recursive: true })
+  const parentDir = path.dirname(targetDir)
+  const targetName = path.basename(targetDir)
+  const nonce = `${Date.now()}-${process.pid}`
+  const tempTargetDir = path.join(parentDir, `${targetName}.__deploying__.${nonce}`)
+  const backupTargetDir = path.join(parentDir, `${targetName}.__backup__.${nonce}`)
+
+  ensureDirectory(parentDir)
+  fs.rmSync(tempTargetDir, { recursive: true, force: true })
+  fs.rmSync(backupTargetDir, { recursive: true, force: true })
+  fs.cpSync(sourceDir, tempTargetDir, { recursive: true })
+
+  const hadExistingTarget = fs.existsSync(targetDir)
+
+  try {
+    if (hadExistingTarget) {
+      fs.renameSync(targetDir, backupTargetDir)
+    }
+
+    fs.renameSync(tempTargetDir, targetDir)
+    fs.rmSync(backupTargetDir, { recursive: true, force: true })
+  } catch (error) {
+    fs.rmSync(tempTargetDir, { recursive: true, force: true })
+
+    if (!fs.existsSync(targetDir) && fs.existsSync(backupTargetDir)) {
+      fs.renameSync(backupTargetDir, targetDir)
+    }
+
+    throw error
+  }
 }
 
 function installDependencies(repoDir, pnpmCmd) {
-  console.log('[STEP 1/6] Install workspace dependencies')
+  console.log('[STEP 1/7] Install workspace dependencies')
   runCommand(pnpmCmd, ['--dir', repoDir, 'install', '--frozen-lockfile', '--prod=false'])
   console.log()
 }
 
 function buildFrontends(repoDir, pnpmCmd, frontends) {
-  console.log('[STEP 2/6] Build frontend apps')
+  console.log('[STEP 2/7] Build frontend apps')
   for (const pkg of frontends) {
     console.log(`  [BUILD] ${pkg.packageJson.name}`)
     runCommand(pnpmCmd, ['--dir', repoDir, '--filter', pkg.packageJson.name, 'build'])
@@ -295,7 +328,7 @@ function buildFrontends(repoDir, pnpmCmd, frontends) {
 }
 
 function syncFrontends(deployRoot, frontends) {
-  console.log('[STEP 3/6] Sync frontend bundles to nginx html')
+  console.log('[STEP 3/7] Sync frontend bundles to nginx html')
   for (const pkg of frontends) {
     const targetSubdir = getFrontendTargetSubdir(pkg)
     const sourceDir = path.join(pkg.dir, 'dist')
@@ -331,10 +364,167 @@ function buildServers(repoDir, pnpmCmd, servers) {
   console.log()
 }
 
-function reloadPm2(repoDir, pm2Cmd, apps) {
+function getPortProbeUrl(port, endpoint = '/ready') {
+  return `http://127.0.0.1:${port}${endpoint}`
+}
+
+async function probeHttpEndpoint(port, endpoint = '/ready', timeoutMs = 2000) {
+  return new Promise((resolve) => {
+    const request = http.get({
+      host: '127.0.0.1',
+      port,
+      path: endpoint,
+      timeout: timeoutMs,
+    }, (response) => {
+      let body = ''
+      response.setEncoding('utf8')
+      response.on('data', (chunk) => {
+        if (body.length >= 512) return
+        body += chunk.slice(0, Math.max(0, 512 - body.length))
+      })
+      response.on('end', () => {
+        resolve({
+          ok: response.statusCode === 200,
+          statusCode: response.statusCode ?? 0,
+          body: body.trim(),
+        })
+      })
+    })
+
+    request.on('timeout', () => {
+      request.destroy(new Error('timeout'))
+    })
+
+    request.on('error', (error) => {
+      resolve({
+        ok: false,
+        statusCode: 0,
+        body: '',
+        error: error.message,
+      })
+    })
+  })
+}
+
+async function waitForReadyEndpoint(port, options = {}) {
+  const timeoutMs = options.timeoutMs ?? 30000
+  const intervalMs = options.intervalMs ?? 1000
+  const startedAt = Date.now()
+  let lastProbe = null
+
+  while (Date.now() - startedAt < timeoutMs) {
+    lastProbe = await probeHttpEndpoint(port, '/ready', options.requestTimeoutMs)
+    if (lastProbe.ok) {
+      return lastProbe
+    }
+    await sleepAsync(intervalMs)
+  }
+
+  const detail = lastProbe?.error
+    || (lastProbe?.statusCode ? `status=${lastProbe.statusCode}` : 'no response')
+  const bodySuffix = lastProbe?.body ? ` body=${JSON.stringify(lastProbe.body)}` : ''
+  throw new Error(`${getPortProbeUrl(port)} did not become ready within ${timeoutMs}ms (${detail})${bodySuffix}`)
+}
+
+async function verifyBackendReadiness(backendPorts) {
+  if (!backendPorts.length) {
+    console.log('  [SKIP ] No backend ports found for readiness check.')
+    return
+  }
+
+  for (const port of backendPorts) {
+    console.log(`  [CHECK] ${getPortProbeUrl(port)}`)
+    await waitForReadyEndpoint(Number(port))
+    console.log(`  [READY] ${getPortProbeUrl(port)}`)
+  }
+}
+
+function listListeningPidsForPort(port) {
+  if (process.platform !== 'win32') {
+    return []
+  }
+
+  const result = spawnSync(
+    'powershell.exe',
+    [
+      '-NoProfile',
+      '-ExecutionPolicy',
+      'Bypass',
+      '-Command',
+      `$connections = Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction SilentlyContinue; if ($connections) { $connections | Select-Object -ExpandProperty OwningProcess -Unique }`,
+    ],
+    {
+      encoding: 'utf8',
+      windowsHide: true,
+    },
+  )
+
+  if (result.error) {
+    throw result.error
+  }
+
+  if ((result.status ?? 0) !== 0) {
+    return []
+  }
+
+  return [...new Set(
+    result.stdout
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean),
+  )]
+}
+
+function cleanupBackendRuntime(repoDir, pm2Cmd, cleanupMetadata) {
+  const pm2Apps = cleanupMetadata.pm2Apps || []
+  const backendPorts = cleanupMetadata.backendPorts || []
+
+  console.log('  [CLEAN] Stopping PM2 apps and releasing backend ports')
+
+  if (pm2Apps.length) {
+    console.log(`  [PM2  ] ${pm2Apps.join(' ')}`)
+    try {
+      runCommand(pm2Cmd, ['delete', ...pm2Apps], { cwd: repoDir })
+    } catch (error) {
+      console.log('  [WARN ] PM2 delete failed, retrying with stop.')
+      try {
+        runCommand(pm2Cmd, ['stop', ...pm2Apps], { cwd: repoDir })
+      } catch (stopError) {
+        console.log(`  [WARN ] PM2 stop failed: ${stopError.message}`)
+      }
+    }
+  }
+
+  for (const port of backendPorts) {
+    console.log(`  [PORT ] ${port}`)
+    const pids = listListeningPidsForPort(port)
+    for (const pid of pids) {
+      console.log(`  [KILL ] PID ${pid} on port ${port}`)
+      try {
+        runCommand('taskkill.exe', ['/F', '/PID', pid])
+      } catch (error) {
+        console.log(`  [WARN ] Failed to kill PID ${pid}: ${error.message}`)
+      }
+    }
+  }
+}
+
+async function reloadPm2(repoDir, pm2Cmd, cleanupMetadata) {
   console.log('[STEP 6/7] Reload backend services with PM2')
   const ecosystemPath = path.join(repoDir, 'ecosystem.config.cjs')
-  runCommand(pm2Cmd, ['startOrReload', ecosystemPath, '--update-env'], { cwd: repoDir })
+  const reloadArgs = ['startOrReload', ecosystemPath, '--update-env']
+
+  try {
+    runCommand(pm2Cmd, reloadArgs, { cwd: repoDir })
+    await verifyBackendReadiness(cleanupMetadata.backendPorts)
+  } catch (error) {
+    console.log(`[WARN] PM2 reload or readiness check failed: ${error.message}`)
+    console.log('  [RETRY] Attempting one clean backend restart.')
+    cleanupBackendRuntime(repoDir, pm2Cmd, cleanupMetadata)
+    runCommand(pm2Cmd, reloadArgs, { cwd: repoDir })
+    await verifyBackendReadiness(cleanupMetadata.backendPorts)
+  }
+
   runCommand(pm2Cmd, ['save'], { cwd: repoDir })
 
   console.log('[OK] PM2 services reloaded.')
@@ -418,6 +608,12 @@ function printPlan(plan) {
   console.log()
 }
 
+function printCleanupMetadata(cleanupMetadata) {
+  console.log('[INFO] Backend ports   :', cleanupMetadata.backendPorts.join(' ') || '(none)')
+  console.log('[INFO] PM2 apps        :', cleanupMetadata.pm2Apps.join(' ') || '(none)')
+  console.log()
+}
+
 function runFrontendMode(repoDir, deployRoot, pnpmCmd) {
   const plan = loadDeploymentPlan(repoDir)
   printPlan(plan)
@@ -441,21 +637,23 @@ function runFrontendMode(repoDir, deployRoot, pnpmCmd) {
   console.log('[OK] All frontend bundles were deployed to nginx successfully.')
 }
 
-function runAllMode(repoDir, deployRoot, pnpmCmd, pm2Cmd, nginxExe, nginxDir, nginxConf) {
+async function runAllMode(repoDir, deployRoot, pnpmCmd, pm2Cmd, nginxExe, nginxDir, nginxConf) {
   const plan = loadDeploymentPlan(repoDir)
+  const cleanupMetadata = getCleanupMetadata(repoDir)
   printPlan(plan)
+  printCleanupMetadata(cleanupMetadata)
   ensureDirectory(deployRoot)
   installDependencies(repoDir, pnpmCmd)
   buildFrontends(repoDir, pnpmCmd, plan.frontends)
   syncFrontends(deployRoot, plan.frontends)
   syncSharedPublicAssets(repoDir, deployRoot)
   buildServers(repoDir, pnpmCmd, plan.servers)
-  reloadPm2(repoDir, pm2Cmd, buildPm2Apps(repoDir))
+  await reloadPm2(repoDir, pm2Cmd, cleanupMetadata)
   restartNginx(nginxExe, nginxDir, nginxConf)
   console.log('[OK] Jenkins build and deploy completed successfully.')
 }
 
-function main() {
+async function main() {
   const { command, options } = parseArgs(process.argv)
   const repoDir = path.resolve(options['repo-dir'] || process.cwd())
   const pnpmCmd = options.pnpm
@@ -506,16 +704,14 @@ function main() {
     throw new Error('Missing required options for all mode: --pm2 --nginx-exe --nginx-dir --nginx-conf')
   }
 
-  runAllMode(repoDir, deployRoot, pnpmCmd, pm2Cmd, nginxExe, nginxDir, nginxConf)
+  await runAllMode(repoDir, deployRoot, pnpmCmd, pm2Cmd, nginxExe, nginxDir, nginxConf)
 }
 
 if (require.main === module) {
-  try {
-    main()
-  } catch (error) {
+  main().catch((error) => {
     console.error('[ERROR]', error.message)
     process.exit(1)
-  }
+  })
 }
 
 module.exports = {

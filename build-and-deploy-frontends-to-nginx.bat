@@ -36,7 +36,7 @@ set "FALLBACK_TWO=%~4"
 set "FALLBACK_THREE=%~5"
 set "RESOLVED_COMMAND="
 
-for /f "delims=" %%I in ('where %TARGET_VAR% 2^>nul') do (
+for /f "delims=" %%I in ('where %DISPLAY_NAME% 2^>nul') do (
   set "RESOLVED_COMMAND=%%~fI"
   goto :resolve_command_found
 )

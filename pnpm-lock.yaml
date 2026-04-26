@@ -571,7 +571,7 @@ importers:
         specifier: ^0.2.2
         version: 0.2.2
       systeminformation:
-        specifier: ^5.27.11
+        specifier: ^5.31.5
         version: 5.31.5
       typeorm:
         specifier: ^0.3.28
