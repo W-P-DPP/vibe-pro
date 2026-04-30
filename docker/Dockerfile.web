@@ -1,0 +1,40 @@
+# syntax=docker/dockerfile:1.7
+
+FROM node:22-alpine AS builder
+
+ENV PNPM_HOME=/pnpm
+ENV PATH=${PNPM_HOME}:${PATH}
+
+RUN corepack enable
+
+WORKDIR /workspace
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY packages ./packages
+COPY frontend-template ./frontend-template
+COPY login-template ./login-template
+COPY agent-front ./agent-front
+COPY reimburse-front ./reimburse-front
+COPY summary-front ./summary-front
+COPY file-server ./file-server
+COPY resume-template ./resume-template
+
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @super-pro/frontend build
+RUN pnpm --filter @super-pro/login-template build
+RUN pnpm --filter @super-pro/agent-front build
+RUN pnpm --filter @super-pro/reimburse-front build
+RUN pnpm --filter @super-pro/summary-front build
+RUN pnpm --filter @super-pro/file-server build
+RUN pnpm --filter @super-pro/resume-template build
+
+FROM nginx:1.27-alpine
+
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /workspace/frontend-template/dist /usr/share/nginx/html/zwpsite
+COPY --from=builder /workspace/login-template/dist /usr/share/nginx/html/login
+COPY --from=builder /workspace/agent-front/dist /usr/share/nginx/html/agent
+COPY --from=builder /workspace/reimburse-front/dist /usr/share/nginx/html/reimburse
+COPY --from=builder /workspace/summary-front/dist /usr/share/nginx/html/summary-front
+COPY --from=builder /workspace/file-server/dist /usr/share/nginx/html/file-server
+COPY --from=builder /workspace/resume-template/dist /usr/share/nginx/html/resume

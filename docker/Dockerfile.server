@@ -1,0 +1,42 @@
+# syntax=docker/dockerfile:1.7
+
+FROM node:22-alpine AS builder
+
+ARG PACKAGE_DIR
+
+ENV PNPM_HOME=/pnpm
+ENV PATH=${PNPM_HOME}:${PATH}
+
+RUN corepack enable
+
+WORKDIR /workspace
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY packages ./packages
+COPY general-server ./general-server
+COPY agent-server ./agent-server
+COPY reimburse-server ./reimburse-server
+
+RUN test "${PACKAGE_DIR}" = "general-server" || test "${PACKAGE_DIR}" = "agent-server" || test "${PACKAGE_DIR}" = "reimburse-server"
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter "./${PACKAGE_DIR}" build
+RUN mkdir -p "/out/${PACKAGE_DIR}" \
+  && cp -r /workspace/node_modules /out/node_modules \
+  && cp -r "/workspace/${PACKAGE_DIR}/node_modules" "/out/${PACKAGE_DIR}/node_modules" \
+  && cp -r "/workspace/${PACKAGE_DIR}/dist" "/out/${PACKAGE_DIR}/dist" \
+  && cp "/workspace/${PACKAGE_DIR}/package.json" "/out/${PACKAGE_DIR}/package.json" \
+  && if [ -d "/workspace/${PACKAGE_DIR}/public" ]; then mkdir -p "/out/${PACKAGE_DIR}/dist/public" && cp -r "/workspace/${PACKAGE_DIR}/public/." "/out/${PACKAGE_DIR}/dist/public"; fi \
+  && if [ -f "/workspace/${PACKAGE_DIR}/siteMenu.json" ]; then cp "/workspace/${PACKAGE_DIR}/siteMenu.json" "/out/${PACKAGE_DIR}/siteMenu.json"; fi
+
+FROM node:22-alpine AS runtime
+
+ARG PACKAGE_DIR
+
+WORKDIR /app/${PACKAGE_DIR}
+
+ENV NODE_ENV=production
+ENV TZ=Asia/Shanghai
+
+COPY --from=builder /out/ /app/
+
+CMD ["node", "dist/main.cjs"]

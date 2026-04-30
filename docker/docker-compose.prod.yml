@@ -1,0 +1,167 @@
+name: super-pro-prod
+
+services:
+  nginx:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+    depends_on:
+      general-server:
+        condition: service_healthy
+      agent-server:
+        condition: service_healthy
+      reimburse-server:
+        condition: service_healthy
+    ports:
+      - "${PUBLIC_HTTP_PORT:-9999}:80"
+    volumes:
+      - ${PROD_RUNTIME_DIR:-D:/super-pro_pro}/nginx/logs:/var/log/nginx
+    restart: unless-stopped
+    networks:
+      - super-pro
+
+  general-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.server
+      args:
+        PACKAGE_DIR: general-server
+    env_file:
+      - ./env/general-server.env
+    volumes:
+      - ./config/general-server.config.json:/app/general-server/config.json:ro
+      - ${PROD_RUNTIME_DIR:-D:/super-pro_pro}/general-server/logs:/app/logs
+      - ${PROD_RUNTIME_DIR:-D:/super-pro_pro}/general-server/file:/data/file
+      - ${PROD_RUNTIME_DIR:-D:/super-pro_pro}/general-server/rubbish:/data/rubbish
+      - ${PROD_RUNTIME_DIR:-D:/super-pro_pro}/general-server/upload-chunks:/data/upload-chunks
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - "30010"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"require('http').get('http://127.0.0.1:30010', (res) => process.exit(res.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))\"",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - super-pro
+
+  agent-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.server
+      args:
+        PACKAGE_DIR: agent-server
+    env_file:
+      - ./env/agent-server.env
+    volumes:
+      - ./config/agent-server.config.json:/app/agent-server/config.json:ro
+      - ${PROD_RUNTIME_DIR:-D:/super-pro_pro}/agent-server/logs:/app/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - "30012"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"require('http').get('http://127.0.0.1:30012', (res) => process.exit(res.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))\"",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - super-pro
+
+  reimburse-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.server
+      args:
+        PACKAGE_DIR: reimburse-server
+    env_file:
+      - ./env/reimburse-server.env
+    volumes:
+      - ./config/reimburse-server.config.json:/app/reimburse-server/config.json:ro
+      - ${PROD_RUNTIME_DIR:-D:/super-pro_pro}/reimburse-server/logs:/app/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      general-server:
+        condition: service_healthy
+    expose:
+      - "30022"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"require('http').get('http://127.0.0.1:30022', (res) => process.exit(res.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))\"",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - super-pro
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - ${PROD_RUNTIME_DIR:-D:/super-pro_pro}/redis:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "127.0.0.1:16379:6379"
+    networks:
+      - super-pro
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-zxc123654}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE:-wxbot}"
+      MYSQL_USER: "${MYSQL_USER:-super_pro}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:-zxc123654}"
+      TZ: "${TZ:-Asia/Shanghai}"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ${PROD_RUNTIME_DIR:-D:/super-pro_pro}/mysql:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    ports: 
+      - "127.0.0.1:13306:3306"
+    networks:
+      - super-pro
+
+networks:
+  super-pro:
+    driver: bridge

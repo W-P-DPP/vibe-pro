@@ -37,7 +37,10 @@
     "typecheck:shared": "turbo run build --filter=@super-pro/tsconfig --filter=@super-pro/shared-*",
     "docker:deploy": "sh scripts/docker-deploy.sh",
     "docker:logs": "sh scripts/docker-logs.sh",
-    "docker:down": "sh scripts/docker-down.sh"
+    "docker:down": "sh scripts/docker-down.sh",
+    "docker:prod:up": "docker compose -f docker/docker-compose.prod.yml up -d --build",
+    "docker:prod:down": "docker compose -f docker/docker-compose.prod.yml down",
+    "docker:prod:logs": "docker compose -f docker/docker-compose.prod.yml logs -f --tail=200"
   },
   "devDependencies": {
     "turbo": "^2.5.8"
