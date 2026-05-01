@@ -1,4 +1,16 @@
-import { access, appendFile, copyFile, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'fs/promises'
+import {
+  access,
+  appendFile,
+  copyFile,
+  mkdir,
+  readdir,
+  readFile,
+  rename,
+  rm,
+  stat,
+  unlink,
+  writeFile,
+} from 'fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -398,17 +410,31 @@ async function ensureParentChainIsWritable(
   }
 }
 
-async function moveUploadedFile(sourcePath: string, destinationPath: string): Promise<void> {
+type MoveFileSystemOps = {
+  rename: typeof rename
+  copyFile: typeof copyFile
+  unlink: typeof unlink
+}
+
+export async function moveFileSystemEntry(
+  sourcePath: string,
+  destinationPath: string,
+  ops: MoveFileSystemOps = {
+    rename,
+    copyFile,
+    unlink,
+  },
+): Promise<void> {
   try {
-    await rename(sourcePath, destinationPath)
+    await ops.rename(sourcePath, destinationPath)
   } catch (error) {
     const errorCode = error instanceof Error && 'code' in error ? String(error.code) : ''
     if (errorCode !== 'EXDEV') {
       throw error
     }
 
-    await copyFile(sourcePath, destinationPath)
-    await unlink(sourcePath).catch(() => null)
+    await ops.copyFile(sourcePath, destinationPath)
+    await ops.unlink(sourcePath).catch(() => null)
   }
 }
 
@@ -631,7 +657,7 @@ export class FileRepository implements FileRepositoryPort {
       if (Buffer.isBuffer(preparedUpload.file.buffer)) {
         await writeFile(preparedUpload.destinationPath, preparedUpload.file.buffer)
       } else if (preparedUpload.file.sourcePath) {
-        await moveUploadedFile(preparedUpload.file.sourcePath, preparedUpload.destinationPath)
+        await moveFileSystemEntry(preparedUpload.file.sourcePath, preparedUpload.destinationPath)
       }
 
       createdNodes.push(await buildNode(rootPath, preparedUpload.destinationPath))
@@ -1003,7 +1029,7 @@ export class FileRepository implements FileRepositoryPort {
     }
 
     await mkdir(path.dirname(rubbishTargetPath), { recursive: true })
-    await rename(absolutePath, rubbishTargetPath)
+    await moveFileSystemEntry(absolutePath, rubbishTargetPath)
 
     return targetEntity
   }
