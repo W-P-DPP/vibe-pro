@@ -5,6 +5,7 @@ import config from '../src/config.ts';
 import { ContactMessageEntitySchema } from '../src/contact/contact.entity.ts';
 import { OperationLogEntity } from '../src/operationLog/operationLog.entity.ts';
 import { SiteMenuEntitySchema } from '../src/siteMenu/siteMenu.entity.ts';
+import { TodoEntitySchema } from '../src/todo/todo.entity.ts';
 import { UserEntitySchema } from '../src/user/user.entity.ts';
 import { Logger } from './index.ts';
 
@@ -43,7 +44,7 @@ export default async function initDataBase() {
         timezone: databaseConfig.timezone,
         charset: databaseConfig.charset,
 
-        entities: [OperationLogEntity, SiteMenuEntitySchema, UserEntitySchema, ContactMessageEntitySchema],
+        entities: [OperationLogEntity, SiteMenuEntitySchema, UserEntitySchema, ContactMessageEntitySchema, TodoEntitySchema],
         migrations: ['src/**/*.migration.ts']
     });
 

@@ -15,7 +15,10 @@
       "Bash(docker build:*)",
       "Bash(status=$?)",
       "Read(//tmp/**)",
-      "Bash(exit $status)"
+      "Bash(exit $status)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm --filter @super-pro/todo-front build)",
+      "Bash(pnpm --filter @super-pro/server build)"
     ]
   }
 }

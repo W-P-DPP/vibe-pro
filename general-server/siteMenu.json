@@ -134,28 +134,6 @@
         "children": []
       },
       {
-        "id": 13,
-        "name": "待办",
-        "path": "http://www.zwpsite.icu:8082/todo/",
-        "icon": "/public/icons/file_server.svg",
-        "isTop": false,
-        "strict": true,
-        "hide": true,
-        "remark": "待办",
-        "children": []
-      },
-      {
-        "id": 14,
-        "name": "SelfAgent",
-        "path": "http://www.zwpsite.icu:8082/todo/",
-        "icon": "/public/icons/file_server.svg",
-        "isTop": false,
-        "strict": true,
-        "hide": true,
-        "remark": "与其蒸馏别人，不如蒸馏自己",
-        "children": []
-      },
-      {
         "id": 15,
         "name": "Agent",
         "path": "http://www.zwpsite.icu:8082/agent/",
@@ -175,6 +153,17 @@
         "strict": true,
         "hide": true,
         "remark": "私单，开发中...",
+        "children": []
+      },
+      {
+        "id": 19,
+        "name": "Todo",
+        "path": "http://www.zwpsite.icu:8082/todo/",
+        "icon": "/public/icons/app.svg",
+        "isTop": false,
+        "strict": true,
+        "hide": false,
+        "remark": "待办事项管理",
         "children": []
       }
     ]
