@@ -219,8 +219,14 @@ const completeChunkUploadBatch = async (req: Request, res: Response) => {
 }
 
 const deleteFile = async (req: Request, res: Response) => {
+  const payload = (
+    req.body && Object.keys(req.body).length > 0
+      ? req.body
+      : req.query
+  ) as DeleteFileRequestDto
+
   try {
-    const deleted = await fileService.deleteTarget(req.body as DeleteFileRequestDto)
+    const deleted = await fileService.deleteTarget(payload)
     res.sendSuccess(deleted, '删除文件成功')
   } catch (error) {
     if (error instanceof FileBusinessError) {

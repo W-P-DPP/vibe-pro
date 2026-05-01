@@ -1,6 +1,7 @@
 import {
   access,
   appendFile,
+  cp,
   copyFile,
   mkdir,
   readdir,
@@ -412,6 +413,9 @@ async function ensureParentChainIsWritable(
 
 type MoveFileSystemOps = {
   rename: typeof rename
+  stat: typeof stat
+  cp: typeof cp
+  rm: typeof rm
   copyFile: typeof copyFile
   unlink: typeof unlink
 }
@@ -421,6 +425,9 @@ export async function moveFileSystemEntry(
   destinationPath: string,
   ops: MoveFileSystemOps = {
     rename,
+    stat,
+    cp,
+    rm,
     copyFile,
     unlink,
   },
@@ -431,6 +438,14 @@ export async function moveFileSystemEntry(
     const errorCode = error instanceof Error && 'code' in error ? String(error.code) : ''
     if (errorCode !== 'EXDEV') {
       throw error
+    }
+
+    const sourceStats = await ops.stat(sourcePath)
+
+    if (sourceStats.isDirectory()) {
+      await ops.cp(sourcePath, destinationPath, { recursive: true })
+      await ops.rm(sourcePath, { recursive: true, force: true })
+      return
     }
 
     await ops.copyFile(sourcePath, destinationPath)

@@ -552,7 +552,9 @@ export default function App() {
 
     setSubmitting(true)
     try {
-      const response = await requestJson<FileNode>('/file', { method: 'DELETE', body: JSON.stringify({ targetPath }) })
+      const response = await requestJson<FileNode>(`/file?targetPath=${encodeURIComponent(targetPath)}`, {
+        method: 'DELETE',
+      })
       setFeedback({ type: 'success', text: `${response.msg}，已移入 rubbish` })
       await refreshTree(getParentPath(targetPath))
     } catch (error) {
