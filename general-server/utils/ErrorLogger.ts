@@ -12,6 +12,14 @@ export class ErrorLogger {
       res: Response,
       next: NextFunction
     ) => {
+      console.error('[ErrorLogger] unhandled request error', {
+        message: err.message,
+        stack: err.stack,
+        method: req.method,
+        url: req.originalUrl,
+        ip: req.ip
+      });
+
       ErrorLogger.logger.error({
         message: err.message,
         stack: err.stack,

@@ -449,6 +449,30 @@ describe('file 文件服务接口', () => {
     expect(movedStats.isFile()).toBe(true)
   })
 
+  it('DELETE /api/file should support targetPath from query string', async () => {
+    await mkdir(path.join(context.fileRoot, 'docs'))
+    await writeFile(path.join(context.fileRoot, 'docs', 'query.txt'), 'query-delete')
+
+    const res = await request(app)
+      .delete('/api/file')
+      .query({
+        targetPath: '/docs/query.txt',
+      })
+
+    expect(res.status).toBe(200)
+    expect(res.body).toMatchObject({
+      code: 200,
+      data: expect.objectContaining({
+        name: 'query.txt',
+        relativePath: '/docs/query.txt',
+        type: 'file',
+      }),
+    })
+
+    const buckets = await readdir(context.rubbishRoot)
+    expect(buckets.length).toBeGreaterThan(0)
+  })
+
   it('POST /api/file/upload/chunk should support chunked upload for a large file', async () => {
     await mkdir(path.join(context.fileRoot, 'docs'))
 
