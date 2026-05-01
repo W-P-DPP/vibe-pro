@@ -5,44 +5,53 @@ set "SCRIPT_DIR=%~dp0"
 if "%SCRIPT_DIR:~-1%"=="\" set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
 set "REPO_DIR=%SCRIPT_DIR%"
 
-set "NODE_CMD=node.exe"
-set "PNPM_CMD=pnpm.cmd"
-set "PM2_CMD=pm2.cmd"
+set "DOCKER_CMD=docker.exe"
+set "COMPOSE_FILE=%REPO_DIR%\docker\docker-compose.prod.yml"
 
-set "NGINX_EXE=D:\Programs\nginx-1.26.3\nginx.exe"
-set "NGINX_DIR=D:\Programs\nginx-1.26.3"
-set "NGINX_CONF=%REPO_DIR%\nginx.production.conf"
-set "NGINX_HTML_ROOT=%NGINX_DIR%\html"
-
-if not "%~1"=="" set "NGINX_HTML_ROOT=%~1"
-if not "%~2"=="" set "NGINX_CONF=%~2"
+if not "%~1"=="" set "COMPOSE_FILE=%~1"
+for %%I in ("%COMPOSE_FILE%") do set "COMPOSE_FILE=%%~fI"
 
 echo [INFO] Repo dir        : %REPO_DIR%
-echo [INFO] Nginx html root : %NGINX_HTML_ROOT%
-echo [INFO] Nginx config    : %NGINX_CONF%
+echo [INFO] Compose file    : %COMPOSE_FILE%
+if defined PROD_RUNTIME_DIR (
+  echo [INFO] Runtime dir    : %PROD_RUNTIME_DIR%
+) else (
+  echo [INFO] Runtime dir    : D:/super-pro_pro ^(docker compose default^)
+)
 echo.
 
-call :resolve_command NODE_CMD "node" "%NVM_SYMLINK%\node.exe" "%ProgramFiles%\nodejs\node.exe" ""
+call :resolve_command DOCKER_CMD "docker" "%ProgramFiles%\Docker\Docker\resources\bin\docker.exe" "%ProgramFiles%\Docker\docker\resources\bin\docker.exe" ""
 if errorlevel 1 exit /b 1
 
-call :resolve_command PNPM_CMD "pnpm" "%APPDATA%\npm\pnpm.cmd" "%NVM_SYMLINK%\pnpm.cmd" "%ProgramFiles%\nodejs\pnpm.cmd"
-if errorlevel 1 exit /b 1
-
-call :resolve_command PM2_CMD "pm2" "%APPDATA%\npm\pm2.cmd" "%NVM_SYMLINK%\pm2.cmd" "%ProgramFiles%\nodejs\pm2.cmd"
-if errorlevel 1 exit /b 1
-
-if not exist "%NGINX_EXE%" (
-  echo [ERROR] File not found: %NGINX_EXE%
+if not exist "%COMPOSE_FILE%" (
+  echo [ERROR] File not found: %COMPOSE_FILE%
   exit /b 1
 )
 
-if not exist "%NGINX_CONF%" (
-  echo [ERROR] File not found: %NGINX_CONF%
+pushd "%REPO_DIR%" >nul
+
+echo [INFO] Validating docker compose file...
+call "%DOCKER_CMD%" compose -f "%COMPOSE_FILE%" config >nul
+if errorlevel 1 (
+  popd >nul
+  echo [ERROR] Docker compose config validation failed.
   exit /b 1
 )
 
-call "%NODE_CMD%" "%REPO_DIR%\scripts\workspace-deploy.cjs" all --repo-dir "%REPO_DIR%" --deploy-root "%NGINX_HTML_ROOT%" --pnpm "%PNPM_CMD%" --pm2 "%PM2_CMD%" --nginx-exe "%NGINX_EXE%" --nginx-dir "%NGINX_DIR%" --nginx-conf "%NGINX_CONF%"
-exit /b %ERRORLEVEL%
+echo [INFO] Starting production deployment...
+call "%DOCKER_CMD%" compose -f "%COMPOSE_FILE%" up -d --build
+if errorlevel 1 (
+  popd >nul
+  echo [ERROR] Docker deployment failed.
+  exit /b 1
+)
+
+echo [INFO] Current service status:
+call "%DOCKER_CMD%" compose -f "%COMPOSE_FILE%" ps
+set "EXIT_CODE=%ERRORLEVEL%"
+
+popd >nul
+exit /b %EXIT_CODE%
 
 :resolve_command
 set "TARGET_VAR=%~1"

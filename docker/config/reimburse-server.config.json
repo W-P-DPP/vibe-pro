@@ -16,7 +16,7 @@
   "Database": {
     "host": "mysql",
     "user": "super_pro",
-    "password": "replace_with_mysql_password",
+    "password": "zxc123654",
     "database": "wxbot",
     "port": 3306,
     "connectionLimit": 10,
